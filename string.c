@@ -24,6 +24,7 @@ void string_init(string* str) {
 void string_set(string* str, char* txt) {
   if (str == NULL) return;
   str->size = strcnt(txt);
+  if (str->txt != NULL) free(str->txt);
   str->txt = malloc(str->size + 1);
   mystrcpy(str->txt, txt);
 }
