@@ -1,5 +1,5 @@
 #include "scanner.h"
-#define _skip_prolog_check  // for debuging purposes when defined prolog check
+//#define _skip_prolog_check  // for debuging purposes when defined prolog check
 // is skipped
 bool regex_check(char *txt, char *re) {
   if (re == NULL) return false;
@@ -463,149 +463,151 @@ void get_identificator(string *word, char *re) {
   }
 }
 // TODO FIX this thing
-void slash_decode(string *str) {
+void slash_decode(string *str) { /*
+   if (str == NULL) return;
+   char *tmp1 = str->txt;
+   char *tmp2 = str->txt;
+   char *tmp3;
+   char tab3[4];
+   char tab2[3];
+   int dec;
+   dec = 0;
+   if (dec == 0) {
+     ;
+   }
+   str->txt = NULL;
+   str->size = 0;
+   while (*tmp2 != '\0') {
+     switch (*tmp2) {
+       case '\\':
+         switch (*(++tmp2)) {
+           case '\\':
+             *(tmp2) = '\0';
+             string_set(str, tmp1);
+             tmp3 = str->txt;
+             str->txt = ++tmp2;
+             slash_decode(str);
+             str->txt = tmp3;
+             string_append(str, tmp2);
+
+             return;
+             break;
+           case '"':
+             *(tmp2 - 1) = '"';
+             *(tmp2) = '\0';
+             string_set(str, tmp1);
+             tmp3 = str->txt;
+             str->txt = ++tmp2;
+             slash_decode(str);
+             str->txt = tmp3;
+             string_append(str, tmp2);
+             return;
+             break;
+           case 't':
+             *tmp2 = '\0';
+             string_set(str, tmp1);
+             strcpy(tab3, "009");
+             string_append(str, tab3);
+             tmp3 = str->txt;
+             str->txt = ++tmp2;
+             slash_decode(str);
+             str->txt = tmp3;
+             string_append(str, tmp2);
+
+             return;
+             break;
+           case 'n':
+             *tmp2 = '\0';
+             string_set(str, tmp1);
+             strcpy(tab3, "010");
+             string_append(str, tab3);
+             tmp3 = str->txt;
+             str->txt = ++tmp2;
+             slash_decode(str);
+             str->txt = tmp3;
+             string_append(str, tmp2);
+
+             return;
+             break;
+           case 'x':
+
+             tab2[0] = *(tmp2 + 1);
+             tab2[1] = *(tmp2 + 2);
+             int dec = strtol(tab2, NULL, 16);
+             if ((dec >= 1 && dec <= 32) || dec == 35 || dec == 92) {
+               *(tmp2++) = '0';
+               sprintf(tmp2, "%d", dec);
+               tmp2 = tmp2 + 2;
+
+             } else {
+               *(tmp2 - 1) = dec;
+               *tmp2 = '\0';
+               tmp2 = tmp2 + 2;
+             }
+             string_set(str, tmp1);
+             tmp3 = str->txt;
+             str->txt = ++tmp2;
+             slash_decode(str);
+             str->txt = tmp3;
+             string_append(str, tmp2);
+
+             return;
+             break;
+           case '0':
+           case '1':
+           case '2':
+           case '3':
+             tab3[0] = *tmp2;
+             tab3[1] = *(tmp2 + 1);
+             tab3[2] = *(tmp2 + 2);
+             dec = strtol(tab3, NULL, 8);
+             if ((dec >= 1 && dec <= 32) || dec == 35 || dec == 92) {
+               sprintf(tmp2, "%d", dec);
+               tmp2 = tmp2 + 3;
+
+             } else if (dec >= 255) {
+               continue;
+             } else {
+               *(tmp2 - 1) = dec;
+               *tmp2 = '\0';
+               tmp2 = tmp2 + 2;
+             }
+             string_set(str, tmp1);
+             tmp3 = str->txt;
+             str->txt = ++tmp2;
+             slash_decode(str);
+             str->txt = tmp3;
+             string_append(str, tmp2);
+
+             return;
+             break;
+           default:
+             continue;
+             break;
+         }
+         break;
+       case ' ':
+       case '\t':
+       case '\n':
+         dec = *tmp2;
+         *tmp2 = '\0';
+         string_set(str, tmp1);
+         char a[7];
+         sprintf(a, "\\0%d", dec);
+         string_append(str, a);
+         tmp3 = str->txt;
+         str->txt = ++tmp2;
+         slash_decode(str);
+         str->txt = tmp3;
+         string_append(str, tmp2);
+
+         return;
+         break;
+       default:
+         break;
+     }
+     ++tmp2;
+   }*/
   if (str == NULL) return;
-  char *tmp1 = str->txt;
-  char *tmp2 = str->txt;
-  char *tmp3;
-  char tab3[4];
-  char tab2[3];
-  int dec;
-  dec = 0;
-  if (dec == 0) {
-    ;
-  }
-  str->txt = NULL;
-  str->size = 0;
-  while (*tmp2 != '\0') {
-    switch (*tmp2) {
-      case '\\':
-        switch (*(++tmp2)) {
-          case '\\':
-            *(tmp2) = '\0';
-            string_set(str, tmp1);
-            tmp3 = str->txt;
-            str->txt = ++tmp2;
-            slash_decode(str);
-            str->txt = tmp3;
-            string_append(str, tmp2);
-
-            return;
-            break;
-          case '"':
-            *(tmp2 - 1) = '"';
-            *(tmp2) = '\0';
-            string_set(str, tmp1);
-            tmp3 = str->txt;
-            str->txt = ++tmp2;
-            slash_decode(str);
-            str->txt = tmp3;
-            string_append(str, tmp2);
-            return;
-            break;
-          case 't':
-            *tmp2 = '\0';
-            string_set(str, tmp1);
-            strcpy(tab3, "009");
-            string_append(str, tab3);
-            tmp3 = str->txt;
-            str->txt = ++tmp2;
-            slash_decode(str);
-            str->txt = tmp3;
-            string_append(str, tmp2);
-
-            return;
-            break;
-          case 'n':
-            *tmp2 = '\0';
-            string_set(str, tmp1);
-            strcpy(tab3, "010");
-            string_append(str, tab3);
-            tmp3 = str->txt;
-            str->txt = ++tmp2;
-            slash_decode(str);
-            str->txt = tmp3;
-            string_append(str, tmp2);
-
-            return;
-            break;
-          case 'x':
-
-            tab2[0] = *(tmp2 + 1);
-            tab2[1] = *(tmp2 + 2);
-            int dec = strtol(tab2, NULL, 16);
-            if ((dec >= 1 && dec <= 32) || dec == 35 || dec == 92) {
-              *(tmp2++) = '0';
-              sprintf(tmp2, "%d", dec);
-              tmp2 = tmp2 + 2;
-
-            } else {
-              *(tmp2 - 1) = dec;
-              *tmp2 = '\0';
-              tmp2 = tmp2 + 2;
-            }
-            string_set(str, tmp1);
-            tmp3 = str->txt;
-            str->txt = ++tmp2;
-            slash_decode(str);
-            str->txt = tmp3;
-            string_append(str, tmp2);
-
-            return;
-            break;
-          case '0':
-          case '1':
-          case '2':
-          case '3':
-            tab3[0] = *tmp2;
-            tab3[1] = *(tmp2 + 1);
-            tab3[2] = *(tmp2 + 2);
-            dec = strtol(tab3, NULL, 8);
-            if ((dec >= 1 && dec <= 32) || dec == 35 || dec == 92) {
-              sprintf(tmp2, "%d", dec);
-              tmp2 = tmp2 + 3;
-
-            } else if (dec >= 255) {
-              continue;
-            } else {
-              *(tmp2 - 1) = dec;
-              *tmp2 = '\0';
-              tmp2 = tmp2 + 2;
-            }
-            string_set(str, tmp1);
-            tmp3 = str->txt;
-            str->txt = ++tmp2;
-            slash_decode(str);
-            str->txt = tmp3;
-            string_append(str, tmp2);
-
-            return;
-            break;
-          default:
-            continue;
-            break;
-        }
-        break;
-      case ' ':
-      case '\t':
-      case '\n':
-        dec = *tmp2;
-        *tmp2 = '\0';
-        string_set(str, tmp1);
-        char a[7];
-        sprintf(a, "\\0%d", dec);
-        string_append(str, a);
-        tmp3 = str->txt;
-        str->txt = ++tmp2;
-        slash_decode(str);
-        str->txt = tmp3;
-        string_append(str, tmp2);
-
-        return;
-        break;
-      default:
-        break;
-    }
-    ++tmp2;
-  }
+  return;
 }
