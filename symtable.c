@@ -13,7 +13,7 @@ void symtable_add(symtable **tree, symtable *leaf) {
     symtable_add(&(*tree)->right, leaf);
   } else
     symtable_add(&(*tree)->left, leaf);
-};
+}
 symtable *symtable_get(symtable **tree, string name) {
   if (*tree == NULL) return NULL;
   if (strcmp((*tree)->name.txt, name.txt) == 0) return *tree;

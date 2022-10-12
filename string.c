@@ -24,7 +24,7 @@ void string_init(string* str) {
 void string_set(string* str, char* txt) {
   if (str == NULL) return;
   str->size = strcnt(txt);
-  str->txt = malloc(str->size * sizeof(char));
+  str->txt = malloc(str->size + 1);
   mystrcpy(str->txt, txt);
 }
 void string_destroy(string* str) {
@@ -40,7 +40,8 @@ void string_append(string* str, char* txt) {
     return;
   }
   int txtcnt = strcnt(txt);
-  str->txt = realloc(str->txt, str->size + txtcnt * sizeof(char));
+  if (txtcnt == 0) return;
+  str->txt = realloc(str->txt, str->size + 1 + txtcnt);
   while (*txt != '\0') {
     str->txt[str->size] = *txt++;
     str->size++;
@@ -60,18 +61,18 @@ bool is_empty(string* str) {
   if (str->size == 0) return true;
   return false;
 }
-
-char pop_first_char(string* str) {
-  char a = *(str->txt);
-  char* tmp = str->txt;
-  str->size--;
-  char* tmp2 = malloc(str->size * sizeof(char));
-  tmp++;
-  while (tmp != NULL) {
-    *tmp2 = *tmp;
-    tmp2++;
-    tmp++;
+void string_deletelast(string* str) {
+  if (str == NULL) return;
+  if (str->txt == NULL) return;
+  if (str->size >= 1) {
+    str->size--;
+    str->txt[str->size] = '\0';
+    char* tmp = str->txt;
+    str->txt = NULL;
+    str->txt = malloc(str->size + 1);
+    strcpy(str->txt, tmp);
+    free(tmp);
+    return;
   }
-  free(str->txt);
-  str->txt = tmp2;
+  string_destroy(str);
 }

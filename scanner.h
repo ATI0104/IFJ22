@@ -33,7 +33,7 @@
 #define _void 110               // 'void'
 #define _dot 111                // '.'
 #define _e 112                  // '[eE]1'
-#define _variable 113           // '$[a-zA-z_]+
+#define _variable 113           // '$[a-zA-Z_]+
 #define _left_parenthesis 114   // '('
 #define _right_parenthesis 115  // ')'
 #define _semicolon 116          // ';'
@@ -46,12 +46,16 @@
 #define _lessthan 123           // '<'
 #define _greaterthan 124        // '>'
 #define _lessthanoreq 125       // '<='
-#define _greaterthaneq 126      // '>='
+#define _greaterthanoreq 126    // '>='
 #define _typecheck 127          // '==='
 #define _not_typecheck 128      // '!=='
 #define _array 129              // '"'
-#define _idenftificator 130     //[a-zA-z_]+
-
+#define _idenftificator 130     //[a-zA-Z_]+
+#define _comma 131              // ','
+#define _number 132             // [0-9]+
+#define _left_curly_bracket 133 // '{'
+#define _right_curly_bracket 134// '}'
+#define _question_mark 135      // '?'
 typedef struct token {
   int type;
   string *str;
@@ -61,4 +65,7 @@ typedef struct token {
 token get_token();
 int is_whitespace(char c, bool *one_line_comment, bool *multi_line_comment,
                   int *linenum);
+void get_identificator(string *word,char *re);
+bool regex_check(char *txt, char *re);
+void slash_decode(string *str);
 #endif
