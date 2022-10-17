@@ -389,7 +389,8 @@ token get_token() {
         if (regex_check(word.txt, "^[[:digit:]]+$")) {  // number
           get_identificator(&word, "^[[:digit:]]+$");
           t.type = _number;
-          int *i = malloc(sizeof(int));
+          int *i;
+          maloc(i,sizeof(int));
           *i = atoi(word.txt);
           t.i_val = i;
           string_destroy(&word);
