@@ -1,24 +1,44 @@
 #include <stdbool.h>
 
 #include "string.h"
-#ifndef _symtable
-#define _symtable
-typedef struct symtable {
+
+typedef struct input_param_list{
+  int type;
+  struct input_param_list *next;
+  }input_param_list;
+
+typedef struct var_table{
   int type;
   string name;
-  int i_value;
-  double f_value;
-  string s_value;
-  bool null;
-  struct symtable *left;
-  struct symtable *right;
-} symtable;
+  string expr;
 
-void symtable_init(symtable **tree);
-void symtable_add(symtable **tree, symtable *leaf);
-symtable *symtable_get(symtable **tree, string name);
-void symtable_destroy(symtable **tree);
-void symtable_delete(symtable **tree, string name);
-void symtable_replace_by_rightmost(symtable *target, symtable **tree);
-symtable *allocate_leaf();
-#endif
+  struct var_table *left_var;
+  struct var_table *right_var;
+}var_table;
+
+
+typedef struct function_table {
+  int type;
+  string name;
+
+  //input param
+ input_param_list input_type;
+
+  //output type
+  int output_type;
+
+  var_table variable;
+
+  struct function_table *left_func;
+  struct function_table *right_func;
+
+}function_table;
+
+
+void function_table_init(function_table **tree);
+void function_table_add(function_table **tree, function_table *leaf);
+function_table *function_table_get(function_table **tree, string name);
+void function_table_destroy(function_table **tree);
+void function_table_delete(function_table **tree, string name);
+void func_table_replace_by_rightmost(function_table *target, function_table **tree);
+function_table *allocate_leaf();
