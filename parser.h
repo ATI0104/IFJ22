@@ -1,6 +1,9 @@
 #include "scanner.h"
 #include "string.h"
 #include "symtable.h"
+#include "macros.h"
+#ifndef _parser
+#define _parser
 #define output input
 typedef struct input {
   int* i;
@@ -63,3 +66,5 @@ void call_destroy(call** c);
 void input_init(input** in);
 void input_add(input** in, int* i, double* f, string* s, string* var);
 void input_destroy(input** in);
+
+#endif
