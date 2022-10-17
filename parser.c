@@ -8,12 +8,13 @@ void AST_add(AST** a, string* f_name, code* code) {
   if (a == NULL) return;
   AST* tmp = *a;
   if (*a == NULL) {
-    tmp = malloc(sizeof(AST));
+    maloc(*a, sizeof(AST));
+    tmp = *a;
   } else {
     while (tmp->next != NULL) {
       tmp = tmp->next;
     }
-    tmp->next = malloc(sizeof(AST));
+    maloc(tmp->next, sizeof(AST));
     tmp = tmp->next;
   }
   tmp->funname = f_name;
@@ -31,6 +32,7 @@ void AST_destroy(AST** a) {
     code_destroy(&(tmp->code));
     free(tmp);
     *a = NULL;
+    return;
   }
   while (tmp_n->next != NULL) {
     tmp_n = tmp_n->next;
@@ -51,12 +53,13 @@ void code_add(code** c, int lnum, code* i, code* e, code* loop, expr* exp,
   if (c == NULL) return;
   code* tmp = *c;
   if (*c == NULL) {
-    tmp = malloc(sizeof(code));
+    maloc(*c, sizeof(code));
+    tmp = *c;
   } else {
     while (tmp->next != NULL) {
       tmp = tmp->next;
     }
-    tmp->next = malloc(sizeof(code));
+    maloc(tmp->next, sizeof(code));
     tmp = tmp->next;
   }
   tmp->line_num = lnum;
@@ -82,6 +85,7 @@ void code_destroy(code** c) {
     call_destroy(&(tmp->jmp));
     free(tmp);
     *c = NULL;
+    return;
   }
   while (tmp_n->next != NULL) {
     tmp_n = tmp_n->next;
@@ -105,12 +109,13 @@ void expr_add(expr** e, int type, string* str, int* num, double* fl, int* op,
   if (e == NULL) return;
   expr* tmp = *e;
   if (*e == NULL) {
-    tmp = malloc(sizeof(expr));
+    maloc(*e, sizeof(expr));
+    tmp = *e;
   } else {
     while (tmp->next != NULL) {
       tmp = tmp->next;
     }
-    tmp->next = malloc(sizeof(expr));
+    maloc(tmp->next, sizeof(expr));
     tmp = tmp->next;
   }
   tmp->type = type;
@@ -138,6 +143,7 @@ void expr_destroy(expr** e) {
     call_destroy(&(tmp->func));
     free(tmp);
     *e = NULL;
+    return;
   }
   while (tmp_n->next != NULL) {
     tmp_n = tmp_n->next;
@@ -161,7 +167,10 @@ void call_init(call** c) {
 void call_create(call** c, string* f_name, input* in, output* out) {
   if (c == NULL) return;
   call* tmp = *c;
-  if (tmp == NULL) tmp = malloc(sizeof(call));
+  if (tmp == NULL) {
+    maloc(*c, sizeof(call));
+    tmp = *c;
+  }
   tmp->function_name = f_name;
   tmp->in = in;
   tmp->out = out;
@@ -184,12 +193,13 @@ void input_add(input** in, int* i, double* f, string* s, string* var) {
   if (in == NULL) return;
   input* tmp = *in;
   if (*in == NULL) {
-    tmp = malloc(sizeof(input));
+    maloc(*in, sizeof(input));
+    tmp = *in;
   } else {
     while (tmp->next != NULL) {
       tmp = tmp->next;
     }
-    tmp->next = malloc(sizeof(input));
+    maloc(tmp->next, sizeof(input));
     tmp = tmp->next;
   }
   tmp->i = i;
@@ -211,6 +221,7 @@ void input_destroy(input** in) {
     string_destroy(tmp->var);
     free(tmp);
     *in = NULL;
+    return;
   }
   while (tmp_n->next != NULL) {
     tmp_n = tmp_n->next;
