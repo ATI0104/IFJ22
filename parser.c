@@ -153,10 +153,7 @@ void expr_destroy(expr** e) {
   tmp->next = NULL;
   expr_destroy(e);
 }
-void expr_toprefix(expr** e) {
-  if (e == NULL) return;
-  // TODO!!!!!!
-}
+
 void call_init(call** c) {
   if (c == NULL) return;
   *c = NULL;
@@ -227,3 +224,65 @@ void input_destroy(input** in) {
   tmp->next = NULL;
   input_destroy(in);
 }
+expr* expr_pop(expr** e) {
+  if (e == NULL) return NULL;
+  if (*e == NULL) return NULL;
+  expr* tmp = *e;
+  *e = (*e)->next;
+  tmp->next = NULL;
+  return tmp;
+}
+int check_precedence(int* op) {
+  switch (*op) {
+    case _multiply:
+    case _divide:
+      return 4;
+    case _plus:
+    case _minus:
+    case _dot:
+      return 3;
+      break;
+    case _lessthan:
+    case _greaterthan:
+    case _lessthanoreq:
+    case _greaterthanoreq:
+      return 2;
+    case _typecheck:
+    case _not_typecheck:
+      return 1;
+    default:
+      eprint("Invalid operator.\n");
+      break;
+  }
+  eprint("Invalid operator.\n");
+  exit(LEXICAL_ERROR);  // Not sure if this is the right error code
+}
+
+void expr_topostfix(expr** e) {
+  if (e == NULL) return;
+  // TODO
+}
+/*
+void expr_reverse(expr** e) {
+  if (e == NULL) return;
+  if (*e == NULL) return;
+  expr* prev = NULL;
+  expr* curr = *e;
+  expr* next = NULL;
+  while (curr != NULL) {
+    if (curr->op != NULL) {
+      switch (*(curr->op)) {
+        case _left_parenthesis:
+          *(curr->op) = _right_parenthesis;
+          break;
+        case _right_parenthesis:
+          *(curr->op) = _left_parenthesis;
+      }
+    }
+    next = curr->next;
+    curr->next = prev;
+    prev = curr;
+    curr = next;
+  }
+  *e = prev;
+}*/

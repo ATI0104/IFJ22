@@ -54,7 +54,9 @@ void expr_init(expr** e);
 void expr_add(expr** e, int type, string* str, int* num, double* fl, int* op,
               string* var, call* func);
 void expr_destroy(expr** e);
-void expr_toprefix(expr** e);
+expr* expr_pop(expr** e);
+void expr_topostfix(expr** e);
+void expr_reverse(expr** e);
 void call_init(call** c);
 void call_create(call** c, string* f_name, input* in, output* out);
 void call_destroy(call** c);
