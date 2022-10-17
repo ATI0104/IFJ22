@@ -1,4 +1,5 @@
 #include "scanner.h"
+
 bool regex_check(char *txt, char *re) {
   if (re == NULL) return false;
   regex_t *regex = calloc(1, sizeof(regex_t));
@@ -117,7 +118,7 @@ token get_token() {
           string_destroy(&word);
           return t;
         } else
-          error;
+          lexerror;
         break;
     }
     if (!prolog_found1) {
@@ -251,9 +252,9 @@ token get_token() {
             string_destroy(&word);
             return t;
           }
-          error;
+          lexerror;
         }
-        error;
+        lexerror;
         break;
       case '=':  // =/===
         c = getc(stdin);
@@ -264,7 +265,7 @@ token get_token() {
             string_destroy(&word);
             return t;
           }
-          error;
+          lexerror;
         }
         ungetc(c, stdin);
         t.type = _equals;
@@ -396,18 +397,18 @@ token get_token() {
           string_destroy(&word);
           return t;
         }
-        error;
+        lexerror;
         break;
     }
     if (is_empty(&word)) {
-      error;
+      lexerror;
     }
     if (regex_check(word.txt, "^[a-zA-Z_]+$")) {
       t.type = _idenftificator;
       t.str = &word;
       return t;
     } else {
-      error;
+      lexerror;
     }
   }
   t.type = _EOF;

@@ -13,7 +13,7 @@
     fprintf(stderr, __VA_ARGS__); \
   } while (0)
 
-#define error                                    \
+#define lexerror                                    \
   do {                                           \
     eprint("Lexical Error on line %d", linenum); \
     string_destroy(&word);                       \

@@ -25,7 +25,7 @@ void string_set(string* str, char* txt) {
   if (str == NULL) return;
   str->size = strcnt(txt);
   if (str->txt != NULL) free(str->txt);
-  str->txt = malloc(str->size + 1);
+  maloc(str->txt, str->size + 1);
   mystrcpy(str->txt, txt);
 }
 void string_destroy(string* str) {
@@ -70,7 +70,7 @@ void string_deletelast(string* str) {
     str->txt[str->size] = '\0';
     char* tmp = str->txt;
     str->txt = NULL;
-    str->txt = malloc(str->size + 1);
+    maloc(str->txt, str->size + 1);
     strcpy(str->txt, tmp);
     free(tmp);
     return;
