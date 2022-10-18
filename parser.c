@@ -81,7 +81,7 @@ void code_destroy(code** c) {
     code_destroy(&(tmp->i));
     code_destroy(&(tmp->e));
     code_destroy(&(tmp->loop));
-    expr_destroy(&(tmp->expression));
+    expr_destroy(&(tmp->expression), true);
     call_destroy(&(tmp->jmp));
     free(tmp);
     *c = NULL;
@@ -94,7 +94,7 @@ void code_destroy(code** c) {
   code_destroy(&(tmp_n->i));
   code_destroy(&(tmp_n->e));
   code_destroy(&(tmp_n->loop));
-  expr_destroy(&(tmp_n->expression));
+  expr_destroy(&(tmp_n->expression), true);
   call_destroy(&(tmp_n->jmp));
   free(tmp_n);
   tmp->next = NULL;
@@ -129,18 +129,20 @@ void expr_add(expr** e, int type, string* str, int* num, double* fl, int* op,
   tmp->next = NULL;
 }
 
-void expr_destroy(expr** e) {
+void expr_destroy(expr** e, bool rec) {
   if (e == NULL) return;
   expr* tmp = *e;
   if (tmp == NULL) return;
   expr* tmp_n = tmp->next;
   if (tmp_n == NULL) {
-    string_destroy(tmp->str);
-    string_destroy(tmp->var);
-    if (tmp->num != NULL) free(tmp->num);
-    if (tmp->fl != NULL) free(tmp->fl);
-    if (tmp->op != NULL) free(tmp->op);
-    call_destroy(&(tmp->func));
+    if (rec) {
+      string_destroy(tmp->str);
+      string_destroy(tmp->var);
+      if (tmp->num != NULL) free(tmp->num);
+      if (tmp->fl != NULL) free(tmp->fl);
+      if (tmp->op != NULL) free(tmp->op);
+      call_destroy(&(tmp->func));
+    }
     free(tmp);
     *e = NULL;
     return;
@@ -157,7 +159,7 @@ void expr_destroy(expr** e) {
   call_destroy(&(tmp_n->func));
   free(tmp_n);
   tmp->next = NULL;
-  expr_destroy(e);
+  expr_destroy(e, rec);
 }
 
 void call_init(call** c) {
@@ -279,15 +281,15 @@ void expr_topostfix(expr** e) {
   tmp = NULL;
   int* j;
   int top;
-  expr* a = expr_pop(e);
+  expr* a = *e;
   Stack* op_stack = NULL;
   Stack_Init(&op_stack);
 
   while (a != NULL) {
+    a = expr_pop(e);
     if (a->op == NULL) {
       expr_add(&tmp, a->type, a->str, a->num, a->fl, a->op, a->var, a->func);
       free(a);
-      a = expr_pop(e);
       continue;
     }
     if (a->op[0] == _left_parenthesis) {
@@ -307,13 +309,13 @@ void expr_topostfix(expr** e) {
         *j = top;
         expr_add(&tmp, 0, NULL, NULL, NULL, j, NULL, NULL);
       }
-      if (!Stack_IsEmpty(op_stack) && top != _left_parenthesis) {
+      if (top != (int)_left_parenthesis) {
         eprint("Invalid Expression\n");
         exit(LEXICAL_ERROR);  // replace with the right exit code
       }
     } else if (a->op[0] == _equals) {
       while (!Stack_IsEmpty(op_stack)) {
-        int k;
+        int k = 0;
         Stack_Top(op_stack, &k);
         Stack_Pop(op_stack);
         maloc(j, sizeof(int));
@@ -333,13 +335,17 @@ void expr_topostfix(expr** e) {
     }
   }
   while (!Stack_IsEmpty(op_stack)) {
-    int k;
+    int k = 0;
     Stack_Top(op_stack, &k);
     Stack_Pop(op_stack);
     maloc(j, sizeof(int));
     *j = k;
     expr_add(&tmp, 0, NULL, NULL, NULL, j, NULL, NULL);
   }
+  a = *e;
+  *e = tmp;
+  expr_destroy(&a, false);
+  return;
 }
 
 /*
