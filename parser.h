@@ -30,15 +30,15 @@ typedef struct expr {
   struct expr* next;
   struct expr* first;
 } expr;
-typedef struct code {
+typedef struct c {
   int line_num;
-  struct code* i;     // if (cond) {}
-  struct code* e;     // else {}
-  struct code* loop;  // while (cond)
+  struct c* i;     // if (cond) {}
+  struct c* e;     // else {}
+  struct c* loop;  // while (cond)
   expr* expression;
   call* jmp;
-  struct code* first;
-  struct code* next;
+  struct c* first;
+  struct c* next;
 } code;
 typedef struct AST {
   string* funname;
@@ -46,6 +46,11 @@ typedef struct AST {
   struct AST* next;
   struct AST* first;
 } AST;
+
+typedef struct tlist {
+  token t;
+  struct tlist* next;
+} tlist;
 
 void AST_init(AST** a);
 void AST_add(AST** a, string* f_name, code* code);
@@ -67,5 +72,6 @@ void call_destroy(call** c);
 void input_init(input** in);
 void input_add(input** in, int* i, double* f, string* s, string* var);
 void input_destroy(input** in);
+tlist* create_tlist();
 
 #endif

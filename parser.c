@@ -280,7 +280,7 @@ void expr_topostfix(expr** e) {
   expr* tmp;
   tmp = NULL;
   int* j;
-  int top;
+  int top = 0;
   expr* a = *e;
   Stack* op_stack = NULL;
   Stack_Init(&op_stack);
@@ -309,7 +309,7 @@ void expr_topostfix(expr** e) {
         *j = top;
         expr_add(&tmp, 0, NULL, NULL, NULL, j, NULL, NULL);
       }
-      if (top != (int)_left_parenthesis) {
+      if (top != _left_parenthesis) {
         eprint("Invalid Expression\n");
         exit(LEXICAL_ERROR);  // replace with the right exit code
       }
@@ -348,27 +348,22 @@ void expr_topostfix(expr** e) {
   return;
 }
 
-/*
-void expr_reverse(expr** e) {
-  if (e == NULL) return;
-  if (*e == NULL) return;
-  expr* prev = NULL;
-  expr* curr = *e;
-  expr* next = NULL;
-  while (curr != NULL) {
-    if (curr->op != NULL) {
-      switch (*(curr->op)) {
-        case _left_parenthesis:
-          *(curr->op) = _right_parenthesis;
-          break;
-        case _right_parenthesis:
-          *(curr->op) = _left_parenthesis;
-      }
+tlist* create_tlist() {
+  tlist* t;
+  maloc(t, sizeof(tlist));
+  tlist* tmp = t;
+  token tok = get_token();
+  while (1) {
+    tmp->t = tok;
+    maloc(tmp->next, sizeof(tlist));
+    tmp = tmp->next;
+    tok = get_token();
+    if (tok.type == _EOF) {
+      tmp->t = tok;
+      tmp->next = NULL;
+      break;
     }
-    next = curr->next;
-    curr->next = prev;
-    prev = curr;
-    curr = next;
   }
-  *e = prev;
-}*/
+  return t;
+}
+
