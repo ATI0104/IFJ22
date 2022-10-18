@@ -67,7 +67,6 @@ void function_table_delete(function_table **tree, string name) {
 
 void func_table_replace_by_rightmost(function_table *target, function_table **tree) {
   if ((*tree)->right_func == NULL) {
-    target->type = (*tree)->type;
     target->name = (*tree)->name;
     target->input_type = (*tree)->input_type;
     target->output_type = (*tree)->output_type;

@@ -8,17 +8,17 @@ typedef struct input_param_list{
   }input_param_list;
 
 typedef struct var_table{
-  int type;
+  int type; //Declared type
   string name;
-  string expr;
-
+  int num;
+  double fl;
+  string s;
   struct var_table *left_var;
   struct var_table *right_var;
 }var_table;
 
 
 typedef struct function_table {
-  int type;
   string name;
 
   //input param
