@@ -16,7 +16,7 @@
 #define lexerror                                    \
   do {                                           \
     eprint("Lexical Error on line %d", linenum); \
-    string_destroy(&word);                       \
+    string_destroy(word);                       \
     exit(LEXICAL_ERROR);                         \
   } while (0)
 

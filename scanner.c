@@ -21,6 +21,8 @@ bool regex_check(char *txt, char *re) {
 }
 token get_token() {
   static int linenum = 1;
+  int *lnum;
+  maloc(lnum, sizeof(int));
   static bool prolog_found = false;   //<?php
   static bool prolog_found1 = false;  // declare(strict_types=1)
   static bool end = false;            // ?> found
@@ -29,12 +31,12 @@ token get_token() {
   prolog_found = true;
 #undef _skip_prolog_check
 #endif
-  string word;
-  string_init(&word);
+  string *word;
+  maloc(word, sizeof(string));
+  string_init(word);
   token t;
   t.i_val = NULL;
   t.str = NULL;
-  t.linenum = &linenum;
   int c = getc(stdin);
   bool one_line_comment = false;
   bool multi_line_comment = false;
@@ -47,7 +49,11 @@ token get_token() {
         c = getc(stdin);
         if (c == EOF) {
           t.type = _EOF;
-          string_destroy(&word);
+          string_destroy(word);
+          *lnum = linenum;
+          t.linenum = lnum;
+          *lnum = linenum;
+          t.linenum = lnum;
           return t;
         }
       }
@@ -56,23 +62,23 @@ token get_token() {
     }
     if (!prolog_found) {
       if (c == '<') {
-        string_appendc(&word, c);
+        string_appendc(word, c);
         for (size_t i = 0; i < 4; i++) {
           c = getc(stdin);
-          string_appendc(&word, c);
+          string_appendc(word, c);
         }
-        if (strcmp(word.txt, "<?php") == 0) {
+        if (strcmp((*word).txt, "<?php") == 0) {
           prolog_found = true;
-          string_destroy(&word);
+          string_destroy(word);
           c = getc(stdin);
           continue;
         } else {
           eprint("Incorrect prolog \n Expected: \"<?php\" got \"%s\"\n",
-                 word.txt);
+                 (*word).txt);
           exit(LEXICAL_ERROR);
         }
       }
-      eprint("Incorrect prolog \n Expected: \"<?php\" got \"%s\"\n", word.txt);
+      eprint("Incorrect prolog \n Expected: \"<?php\" got \"%s\"\n", word->txt);
       exit(LEXICAL_ERROR);
     }
     if (one_line_comment) {
@@ -115,7 +121,9 @@ token get_token() {
       case 3:
         if (prolog_found1) {
           t.type = _divide;
-          string_destroy(&word);
+          string_destroy(word);
+          *lnum = linenum;
+          t.linenum = lnum;
           return t;
         } else
           lexerror;
@@ -123,46 +131,54 @@ token get_token() {
     }
     if (!prolog_found1) {
       if (c == 'd') {
-        string_appendc(&word, c);
+        string_appendc(word, c);
         for (size_t i = 0; i < 23; i++) {
           c = getc(stdin);
-          string_appendc(&word, c);
+          string_appendc(word, c);
         }
-        if (strcmp(word.txt, "declare(strict_types=1);") == 0) {
+        if (strcmp(word->txt, "declare(strict_types=1);") == 0) {
           prolog_found1 = true;
           t.type = _prolog;
-          string_destroy(&word);
+          string_destroy(word);
+          *lnum = linenum;
+          t.linenum = lnum;
           return t;
         }
       }
       eprint(
           "Incorrect prolog \n Expected: \"declare(strict_types=1);\" got "
           "\"%s\"\n",
-          word.txt);
-      string_destroy(&word);
+          word->txt);
+      string_destroy(word);
       exit(LEXICAL_ERROR);
     };
     switch (c) {
       case 'f':;  // function
-        string_appendc(&word, c);
-        get_identificator(&word, "^[a-zA-Z_]+$");
-        if (strcmp(word.txt, "function") == 0) {
+        string_appendc(word, c);
+        get_identificator(word, "^[a-zA-Z_]+$");
+        if (strcmp(word->txt, "function") == 0) {
           t.type = _function;
-          string_destroy(&word);
+          string_destroy(word);
+          *lnum = linenum;
+          t.linenum = lnum;
           return t;
         }
         break;
       case 'i':  // if / int
-        string_appendc(&word, c);
-        get_identificator(&word, "^[a-zA-Z_]+$");
-        if (strcmp(word.txt, "if") == 0) {
+        string_appendc(word, c);
+        get_identificator(word, "^[a-zA-Z_]+$");
+        if (strcmp(word->txt, "if") == 0) {
           t.type = _if;
-          string_destroy(&word);
+          string_destroy(word);
+          *lnum = linenum;
+          t.linenum = lnum;
           return t;
         }
-        if (strcmp(word.txt, "int") == 0) {
+        if (strcmp(word->txt, "int") == 0) {
           t.type = _int;
-          string_destroy(&word);
+          string_destroy(word);
+          *lnum = linenum;
+          t.linenum = lnum;
           return t;
         }
         break;
@@ -172,11 +188,13 @@ token get_token() {
         c = getc(stdin);
         string_appendc(&varname, c);
         get_identificator(&varname, "^[a-zA-Z_]+$");
-        string_set(&word, "$");
-        string_append(&word, varname.txt);
+        string_set(word, "$");
+        string_append(word, varname.txt);
         t.type = _variable;
-        t.str = &word;
+        t.str = word;
         string_destroy(&varname);
+        *lnum = linenum;
+        t.linenum = lnum;
         return t;
         break;
       case 'E':
@@ -185,71 +203,87 @@ token get_token() {
         if ((c >= '0' && c <= 9) || c == '+' || c == '-') {
           t.type = _e;
           ungetc(c, stdin);
-          string_destroy(&word);
+          string_destroy(word);
+          *lnum = linenum;
+          t.linenum = lnum;
           return t;
         } else if (c == 'l') {
-          string_set(&word, "el");
-          get_identificator(&word, "^[a-zA-Z_]+$");
-          if (strcmp(word.txt, "else") == 0) {
+          string_set(word, "el");
+          get_identificator(word, "^[a-zA-Z_]+$");
+          if (strcmp(word->txt, "else") == 0) {
             t.type = _else;
-            string_destroy(&word);
+            string_destroy(word);
+            *lnum = linenum;
+            t.linenum = lnum;
             return t;
           }
         }
         break;
       case 'n':  // null
-        string_appendc(&word, c);
-        get_identificator(&word, "^[a-zA-Z_]+$");
-        if (strcmp(word.txt, "null") == 0) {
+        string_appendc(word, c);
+        get_identificator(word, "^[a-zA-Z_]+$");
+        if (strcmp(word->txt, "null") == 0) {
           t.type = _null;
-          string_destroy(&word);
+          string_destroy(word);
+          *lnum = linenum;
+          t.linenum = lnum;
           return t;
         }
         break;
       case 'r':  // return
-        string_appendc(&word, c);
-        get_identificator(&word, "^[a-zA-Z_]+$");
-        if (strcmp(word.txt, "return") == 0) {
+        string_appendc(word, c);
+        get_identificator(word, "^[a-zA-Z_]+$");
+        if (strcmp(word->txt, "return") == 0) {
           t.type = _return;
-          string_destroy(&word);
+          string_destroy(word);
+          *lnum = linenum;
+          t.linenum = lnum;
           return t;
         }
         break;
       case 's':  // string
-        string_appendc(&word, c);
-        get_identificator(&word, "^[a-zA-Z_]+$");
-        if (strcmp(word.txt, "string") == 0) {
+        string_appendc(word, c);
+        get_identificator(word, "^[a-zA-Z_]+$");
+        if (strcmp(word->txt, "string") == 0) {
           t.type = _string;
-          string_destroy(&word);
+          string_destroy(word);
+          *lnum = linenum;
+          t.linenum = lnum;
           return t;
         }
         break;
       case 'v':  // void
-        string_appendc(&word, c);
-        get_identificator(&word, "^[a-zA-Z_]+$");
-        if (strcmp(word.txt, "void") == 0) {
+        string_appendc(word, c);
+        get_identificator(word, "^[a-zA-Z_]+$");
+        if (strcmp(word->txt, "void") == 0) {
           t.type = _void;
-          string_destroy(&word);
+          string_destroy(word);
+          *lnum = linenum;
+          t.linenum = lnum;
           return t;
         }
         break;
       case 'w':  // while
-        string_appendc(&word, c);
-        get_identificator(&word, "^[a-zA-Z_]+$");
-        if (strcmp(word.txt, "while") == 0) {
+        string_appendc(word, c);
+        get_identificator(word, "^[a-zA-Z_]+$");
+        if (strcmp(word->txt, "while") == 0) {
           t.type = _while;
-          string_destroy(&word);
+          string_destroy(word);
+          *lnum = linenum;
+          t.linenum = lnum;
           return t;
         }
         break;
       case '!':  // !==
-        string_appendc(&word, c);
+        string_appendc(word, c);
         c = getc(stdin);
         if (c == '=') {
           c = getc(stdin);
           if (c == '=') {
             t.type = _not_typecheck;
-            string_destroy(&word);
+            string_destroy(word);
+            *lnum = linenum;
+            t.linenum = lnum;
             return t;
           }
           lexerror;
@@ -262,29 +296,39 @@ token get_token() {
           c = getc(stdin);
           if (c == '=') {
             t.type = _typecheck;
-            string_destroy(&word);
+            string_destroy(word);
+            *lnum = linenum;
+            t.linenum = lnum;
             return t;
           }
           lexerror;
         }
         ungetc(c, stdin);
         t.type = _equals;
-        string_destroy(&word);
+        string_destroy(word);
+        *lnum = linenum;
+        t.linenum = lnum;
         return t;
         break;
       case '.':
         t.type = _dot;
-        string_destroy(&word);
+        string_destroy(word);
+        *lnum = linenum;
+        t.linenum = lnum;
         return t;
         break;
       case ':':
         t.type = _colon;
-        string_destroy(&word);
+        string_destroy(word);
+        *lnum = linenum;
+        t.linenum = lnum;
         return t;
         break;
       case ';':
         t.type = _semicolon;
-        string_destroy(&word);
+        string_destroy(word);
+        *lnum = linenum;
+        t.linenum = lnum;
         return t;
         break;
       case '>':  //>/>=
@@ -295,7 +339,9 @@ token get_token() {
           ungetc(c, stdin);
           t.type = _greaterthan;
         }
-        string_destroy(&word);
+        string_destroy(word);
+        *lnum = linenum;
+        t.linenum = lnum;
         return t;
         break;
       case '<':  //</<=
@@ -306,7 +352,9 @@ token get_token() {
           ungetc(c, stdin);
           t.type = _lessthan;
         }
-        string_destroy(&word);
+        string_destroy(word);
+        *lnum = linenum;
+        t.linenum = lnum;
         return t;
         break;
       case ')':
@@ -315,54 +363,70 @@ token get_token() {
           t.type = _right_parenthesis;
         else
           t.type = _left_parenthesis;
-        string_destroy(&word);
+        string_destroy(word);
+        *lnum = linenum;
+        t.linenum = lnum;
         return t;
         break;
       case '-':
         t.type = _minus;
-        string_destroy(&word);
+        string_destroy(word);
+        *lnum = linenum;
+        t.linenum = lnum;
         return t;
         break;
       case '+':
         t.type = _plus;
-        string_destroy(&word);
+        string_destroy(word);
+        *lnum = linenum;
+        t.linenum = lnum;
         return t;
         break;
       case '*':
         t.type = _multiply;
-        string_destroy(&word);
+        string_destroy(word);
+        *lnum = linenum;
+        t.linenum = lnum;
         return t;
         break;
       case '"':
         c = getc(stdin);
-        string_appendc(&word, c);
+        string_appendc(word, c);
         while (1) {
           c = getc(stdin);
           if (c == '"') {
-            if (word.txt[word.size - 1] == '\\')
+            if (word->txt[word->size - 1] == '\\')
               ;
             else
               break;
           }
-          string_appendc(&word, c);
+          string_appendc(word, c);
         }
-        slash_decode(&word);
-        t.str = &word;
+        slash_decode(word);
+        t.str = word;
         t.type = _array;
+        *lnum = linenum;
+        t.linenum = lnum;
         return t;
         break;
       case ',':
         t.type = _comma;
-        string_destroy(&word);
+        string_destroy(word);
+        *lnum = linenum;
+        t.linenum = lnum;
         return t;
       case '{':
         t.type = _left_curly_bracket;
-        string_destroy(&word);
+        string_destroy(word);
+        *lnum = linenum;
+        t.linenum = lnum;
         return t;
         break;
       case '}':
         t.type = _right_curly_bracket;
-        string_destroy(&word);
+        string_destroy(word);
+        *lnum = linenum;
+        t.linenum = lnum;
         return t;
         break;
       case '?':
@@ -374,44 +438,54 @@ token get_token() {
         } else {
           ungetc(c, stdin);
           t.type = _question_mark;
-          string_destroy(&word);
+          string_destroy(word);
+          *lnum = linenum;
+          t.linenum = lnum;
           return t;
         }
         break;
       default:
         // number or  identificator or error
-        string_appendc(&word, c);
-        if (regex_check(word.txt, "^[a-zA-Z_]+$")) {  // identificator
-          get_identificator(&word, "^[a-zA-Z_]+$");
+        string_appendc(word, c);
+        if (regex_check(word->txt, "^[a-zA-Z_]+$")) {  // identificator
+          get_identificator(word, "^[a-zA-Z_]+$");
           t.type = _idenftificator;
-          t.str = &word;
+          t.str = word;
+          *lnum = linenum;
+          t.linenum = lnum;
           return t;
         }
-        if (regex_check(word.txt, "^[[:digit:]]+$")) {  // number
-          get_identificator(&word, "^[[:digit:]]+$");
+        if (regex_check(word->txt, "^[[:digit:]]+$")) {  // number
+          get_identificator(word, "^[[:digit:]]+$");
           t.type = _number;
           int *i;
-          maloc(i,sizeof(int));
-          *i = atoi(word.txt);
+          maloc(i, sizeof(int));
+          *i = atoi(word->txt);
           t.i_val = i;
-          string_destroy(&word);
+          string_destroy(word);
+          *lnum = linenum;
+          t.linenum = lnum;
           return t;
         }
         lexerror;
         break;
     }
-    if (is_empty(&word)) {
+    if (is_empty(word)) {
       lexerror;
     }
-    if (regex_check(word.txt, "^[a-zA-Z_]+$")) {
+    if (regex_check(word->txt, "^[a-zA-Z_]+$")) {
       t.type = _idenftificator;
-      t.str = &word;
+      t.str = word;
+      *lnum = linenum;
+      t.linenum = lnum;
       return t;
     } else {
       lexerror;
     }
   }
   t.type = _EOF;
+  *lnum = linenum;
+  t.linenum = lnum;
   return t;
 }
 
@@ -562,7 +636,7 @@ void slash_decode(string *str) {
             tab3[0] = *tmp2;
             tab3[1] = *(tmp2 + 1);
             tab3[2] = *(tmp2 + 2);
-            if (!regex_check(tab3+1, "^[0-7]{2}$")) {
+            if (!regex_check(tab3 + 1, "^[0-7]{2}$")) {
               *(--tmp2) = '\0';
               string_append(str, tmp1);
               strcpy(a, "\\092");

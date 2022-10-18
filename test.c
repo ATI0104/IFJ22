@@ -1,13 +1,15 @@
+#include "parser.h"
 #include "scanner.h"
 #include "string.h"
 #include "symtable.h"
 int main() {
-  token tok;
+  tlist* m = create_tlist();
   string a;
   string_init(&a);
   // Prints out basic informations about the generated tokens
-  while (tok.type != 100) {
-    tok = get_token();
+  token tok;
+  while (m != NULL) {
+    tok = m->t;
     printf("Token from line %d\n has a type of %d.\n", *(tok.linenum),
            tok.type);
     if (tok.i_val != NULL) {
@@ -16,6 +18,7 @@ int main() {
     if (tok.str != NULL) {
       printf("It's string value = \"%s\"\n", tok.str->txt);
     }
+    m = m->next;
   }
 
   return 0;
