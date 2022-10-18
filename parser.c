@@ -244,6 +244,7 @@ expr* expr_pop(expr** e) {
   return tmp;
 }
 int check_precedence(int* op) {
+  if (op == NULL) return -1;
   switch (*op) {
     case _multiply:
     case _divide:
@@ -261,8 +262,11 @@ int check_precedence(int* op) {
     case _typecheck:
     case _not_typecheck:
       return 1;
+    case _left_parenthesis:
+      return 0;
+      break;
     default:
-      eprint("Invalid operator.\n");
+      return -1;
       break;
   }
   eprint("Invalid operator.\n");
@@ -271,8 +275,73 @@ int check_precedence(int* op) {
 
 void expr_topostfix(expr** e) {
   if (e == NULL) return;
-  // TODO
+  expr* tmp;
+  tmp = NULL;
+  int* j;
+  int top;
+  expr* a = expr_pop(e);
+  Stack* op_stack = NULL;
+  Stack_Init(&op_stack);
+
+  while (a != NULL) {
+    if (a->op == NULL) {
+      expr_add(&tmp, a->type, a->str, a->num, a->fl, a->op, a->var, a->func);
+      free(a);
+      a = expr_pop(e);
+      continue;
+    }
+    if (a->op[0] == _left_parenthesis) {
+      Stack_Push(&op_stack, a->op[0]);
+    } else if (a->op[0] == _right_parenthesis) {
+      while (!Stack_IsEmpty(op_stack)) {  // Going through the stack until it's
+                                          // empty or '(' is found
+        Stack_Top(op_stack,
+                  &top);      // Getting the character form the top of the stack
+        Stack_Pop(op_stack);  // Removing the top character
+
+        if (top == _left_parenthesis) {  //'(' is reached we remove it from the
+                                         // stack and return
+          break;
+        }
+        maloc(j, sizeof(int));
+        *j = top;
+        expr_add(&tmp, 0, NULL, NULL, NULL, j, NULL, NULL);
+      }
+      if (!Stack_IsEmpty(op_stack) && top != _left_parenthesis) {
+        eprint("Invalid Expression\n");
+        exit(LEXICAL_ERROR);  // replace with the right exit code
+      }
+    } else if (a->op[0] == _equals) {
+      while (!Stack_IsEmpty(op_stack)) {
+        int k;
+        Stack_Top(op_stack, &k);
+        Stack_Pop(op_stack);
+        maloc(j, sizeof(int));
+        *j = k;
+        expr_add(&tmp, 0, NULL, NULL, NULL, j, NULL, NULL);
+      }
+      break;
+    } else {
+      Stack_Top(op_stack, &top);
+      top = check_precedence(&top);
+      while (!Stack_IsEmpty(op_stack) && check_precedence(a->op) <= top) {
+        maloc(j, sizeof(int));
+        *j = top;
+        expr_add(&tmp, 0, NULL, NULL, NULL, j, NULL, NULL);
+      }
+      Stack_Push(&op_stack, a->op[0]);
+    }
+  }
+  while (!Stack_IsEmpty(op_stack)) {
+    int k;
+    Stack_Top(op_stack, &k);
+    Stack_Pop(op_stack);
+    maloc(j, sizeof(int));
+    *j = k;
+    expr_add(&tmp, 0, NULL, NULL, NULL, j, NULL, NULL);
+  }
 }
+
 /*
 void expr_reverse(expr** e) {
   if (e == NULL) return;

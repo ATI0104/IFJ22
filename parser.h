@@ -1,7 +1,8 @@
+#include "macros.h"
 #include "scanner.h"
+#include "stack.h"
 #include "string.h"
 #include "symtable.h"
-#include "macros.h"
 #ifndef _parser
 #define _parser
 #define output input
@@ -19,7 +20,7 @@ typedef struct call {
   output* out;
 } call;
 typedef struct expr {
-  int type;
+  int type;  // not used
   string* str;
   int* num;
   double* fl;
@@ -31,9 +32,9 @@ typedef struct expr {
 } expr;
 typedef struct code {
   int line_num;
-  struct code* i;     // if
-  struct code* e;     // else
-  struct code* loop;  // while
+  struct code* i;     // if (cond) {}
+  struct code* e;     // else {}
+  struct code* loop;  // while (cond)
   expr* expression;
   call* jmp;
   struct code* first;
