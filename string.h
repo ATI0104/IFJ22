@@ -18,4 +18,5 @@ void string_append(string* str, char* txt);
 void string_appendc(string* str, char c);
 bool is_empty(string* str);
 void string_deletelast(string* str);
+void string_deletefirst(string* str);
 #endif

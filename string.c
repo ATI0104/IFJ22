@@ -77,3 +77,20 @@ void string_deletelast(string* str) {
   }
   string_destroy(str);
 }
+
+void string_deletefirst(string* str) {
+  if (str == NULL) return;
+  if (str->txt == NULL) return;
+  if (str->size >= 1) {
+    str->size--;
+    string* tmp;
+    maloc(tmp, sizeof(string));
+    string_init(tmp);
+    string_append(tmp, str->txt + 1);
+    char* swap = str->txt;
+    str->txt = tmp->txt;
+    tmp->txt = swap;
+    string_destroy(tmp);
+  }
+  string_destroy(str);
+}
