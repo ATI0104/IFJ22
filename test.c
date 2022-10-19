@@ -2,10 +2,19 @@
 #include "scanner.h"
 #include "string.h"
 #include "symtable.h"
+void expr_print(expr* e, bool postfix);
 int main() {
   tlist* m = create_tlist();
   string a;
   string_init(&a);
+  #ifdef _skip_prolog_check
+  expr* e;
+  int c = 0;
+  e = read_expression(m, &c);
+  expr_print(e, false);
+  expr_topostfix(&e);
+  expr_print(e, true);
+  #endif
   // Prints out basic informations about the generated tokens
   token tok;
   while (m != NULL) {
@@ -22,4 +31,65 @@ int main() {
   }
 
   return 0;
+}
+
+void expr_print(expr* e, bool postfix) {
+  if (postfix) printf("Postfix: ");
+  while (e != NULL) {
+    if (e->str != NULL) printf("%s ", e->str->txt);
+    if (e->num != NULL) printf("%d ", *(e->num));
+    if (e->fl != NULL) printf("%f ", *(e->fl));
+    if (e->var != NULL) printf("%s ", e->var->txt);
+    if (e->op != NULL) {
+      switch (*(e->op)) {
+        case _equals:
+          printf("= ");
+          break;
+        case _plus:
+          printf("+ ");
+          break;
+        case _minus:
+          printf("- ");
+          break;
+        case _multiply:
+          printf("* ");
+          break;
+        case _divide:
+          printf("/ ");
+          break;
+        case _lessthan:
+          printf("< ");
+          break;
+        case _greaterthan:
+          printf("> ");
+          break;
+        case _lessthanoreq:
+          printf("<= ");
+          break;
+        case _greaterthanoreq:
+          printf(">= ");
+          break;
+        case _typecheck:
+          printf("=== ");
+          break;
+        case _not_typecheck:
+          printf("!== ");
+          break;
+        case _dot:
+          printf(". ");
+          break;
+        case _left_parenthesis:
+        printf("( ");
+        break;
+        case _right_parenthesis:
+        printf(") ");
+        break;
+        default:
+          printf("\"%d\"", *(e->op));
+          break;
+      }
+    }
+    e = e->next;
+  }
+  printf("\n");
 }

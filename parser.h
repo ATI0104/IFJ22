@@ -73,5 +73,6 @@ void input_init(input** in);
 void input_add(input** in, int* i, double* f, string* s, string* var);
 void input_destroy(input** in);
 tlist* create_tlist();
-
+expr* read_expression(tlist* t, int* c);
+tlist* create_floats(tlist *t);
 #endif

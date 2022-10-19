@@ -2,6 +2,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+
 #include "macros.h"
 #include "string.h"
 #ifndef _token
@@ -44,11 +45,14 @@
 #define _left_curly_bracket 133   // '{'
 #define _right_curly_bracket 134  // '}'
 #define _question_mark 135        // '?'
+#define _float 136                // 'float'
+#define _decimalnumber 137        // 3.1415
 typedef struct token {
   int type;
   string *str;
   int *i_val;
   int *linenum;
+  double *f_val;
 } token;
 token get_token();
 int is_whitespace(char c, bool *one_line_comment, bool *multi_line_comment,

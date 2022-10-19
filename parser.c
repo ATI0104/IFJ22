@@ -285,8 +285,9 @@ void expr_topostfix(expr** e) {
   Stack* op_stack = NULL;
   Stack_Init(&op_stack);
 
-  while (a != NULL) {
+  while (true) {
     a = expr_pop(e);
+    if (a == NULL) break;
     if (a->op == NULL) {
       expr_add(&tmp, a->type, a->str, a->num, a->fl, a->op, a->var, a->func);
       free(a);
@@ -325,11 +326,13 @@ void expr_topostfix(expr** e) {
       break;
     } else {
       Stack_Top(op_stack, &top);
-      top = check_precedence(&top);
-      while (!Stack_IsEmpty(op_stack) && check_precedence(a->op) <= top) {
+      while (!Stack_IsEmpty(op_stack) &&
+             check_precedence(a->op) <= check_precedence(&top)) {
         maloc(j, sizeof(int));
         *j = top;
         expr_add(&tmp, 0, NULL, NULL, NULL, j, NULL, NULL);
+        Stack_Pop(op_stack);
+        Stack_Top(op_stack, &top);
       }
       Stack_Push(&op_stack, a->op[0]);
     }
@@ -347,7 +350,9 @@ void expr_topostfix(expr** e) {
   expr_destroy(&a, false);
   return;
 }
-
+tlist* create_floats(tlist* t) {  // TODO
+  return t;
+}
 tlist* create_tlist() {
   tlist* t;
   maloc(t, sizeof(tlist));
@@ -367,3 +372,78 @@ tlist* create_tlist() {
   return t;
 }
 
+expr* read_expression(tlist* t, int* c) {
+  if (t == NULL || c == NULL) return NULL;
+  *c = 0;
+  expr* tmp;
+  expr_init(&tmp);
+  int brackets = 0;
+  while (t->t.type != _left_curly_bracket && t->t.type != _semicolon) {
+    if (t == NULL) {
+      eprint("Incorrect expression\n");
+      exit(4);  // Add correct exit code
+    }
+    if ((t->t.type >= _plus && t->t.type <= _not_typecheck) ||
+        t->t.type == _dot) {
+      expr_add(&tmp, 0, NULL, NULL, NULL, &(t->t.type), NULL, NULL);
+      t = t->next;
+      (*c)++;
+      continue;
+    }
+    if (t->t.type == _left_parenthesis) {
+      expr_add(&tmp, 0, NULL, NULL, NULL, &(t->t.type), NULL, NULL);
+      t = t->next;
+      (*c)++;
+      brackets++;
+      continue;
+    }
+    if (t->t.type == _right_parenthesis) {
+      expr_add(&tmp, 0, NULL, NULL, NULL, &(t->t.type), NULL, NULL);
+      brackets--;
+      t = t->next;
+      (*c)++;
+      if (brackets == 0) {
+        if (t->t.type == _semicolon || t->t.type == _left_curly_bracket)
+          return tmp;
+        else {
+          eprint("Syntax error\n");
+          exit(4);  // Add correct exit code
+        }
+      }
+      continue;
+    }
+    switch (t->t.type) {
+      case _number:
+        expr_add(&tmp, 0, NULL, t->t.i_val, NULL, NULL, NULL, NULL);
+        t = t->next;
+        (*c)++;
+        break;
+      case _decimalnumber:
+        expr_add(&tmp, 0, NULL, NULL, t->t.f_val, NULL, NULL, NULL);
+        t = t->next;
+        (*c)++;
+        break;
+      case _variable:
+        expr_add(&tmp, 0, NULL, NULL, NULL, NULL, t->t.str, NULL);
+        t = t->next;
+        (*c)++;
+        break;
+      case _array:
+        expr_add(&tmp, 0, t->t.str, NULL, NULL, NULL, NULL, NULL);
+        t = t->next;
+        (*c)++;
+        break;
+      case _idenftificator:
+        // TODO load function input params
+        expr_add(&tmp, 0, NULL, NULL, NULL, NULL, t->t.str, NULL);
+        t = t->next;
+        (*c)++;
+        break;
+      default:
+        eprint("Incorrect expression\n");
+        exit(4);  // Add correct exit code
+        break;
+    }
+  }
+  return NULL;
+}

@@ -1,5 +1,4 @@
 #include "scanner.h"
-
 bool regex_check(char *txt, char *re) {
   if (re == NULL) return false;
   regex_t *regex = calloc(1, sizeof(regex_t));
@@ -29,7 +28,6 @@ token get_token() {
 #ifdef _skip_prolog_check
   prolog_found1 = true;
   prolog_found = true;
-#undef _skip_prolog_check
 #endif
   string *word;
   maloc(word, sizeof(string));
@@ -153,11 +151,17 @@ token get_token() {
       exit(LEXICAL_ERROR);
     };
     switch (c) {
-      case 'f':;  // function
+      case 'f':;  // function / float
         string_appendc(word, c);
         get_identificator(word, "^[a-zA-Z_]+$");
         if (strcmp(word->txt, "function") == 0) {
           t.type = _function;
+          string_destroy(word);
+          *lnum = linenum;
+          t.linenum = lnum;
+          return t;
+        } else if (strcmp(word->txt, "float") == 0) {
+          t.type = _float;
           string_destroy(word);
           *lnum = linenum;
           t.linenum = lnum;
