@@ -34,6 +34,7 @@ token get_token() {
   string_init(word);
   token t;
   t.i_val = NULL;
+  t.f_val = NULL;
   t.str = NULL;
   int c = getc(stdin);
   bool one_line_comment = false;
@@ -204,7 +205,7 @@ token get_token() {
       case 'E':
       case 'e':  // else /eE
         c = getc(stdin);
-        if ((c >= '0' && c <= 9) || c == '+' || c == '-') {
+        if ((c >= '0' && c <= '9') || c == '+' || c == '-') {
           t.type = _e;
           ungetc(c, stdin);
           string_destroy(word);
@@ -462,11 +463,7 @@ token get_token() {
         if (regex_check(word->txt, "^[[:digit:]]+$")) {  // number
           get_identificator(word, "^[[:digit:]]+$");
           t.type = _number;
-          int *i;
-          maloc(i, sizeof(int));
-          *i = atoi(word->txt);
-          t.i_val = i;
-          string_destroy(word);
+          t.str = word;
           *lnum = linenum;
           t.linenum = lnum;
           return t;

@@ -1,9 +1,9 @@
+#ifndef _stack
+#define _stack
 #include <stdio.h>
 #include <stdlib.h>
 
 #include "macros.h"
-#ifndef _stack
-#define _stack
 typedef struct opstack {
   int* array;
   int topIndex;

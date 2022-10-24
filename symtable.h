@@ -1,9 +1,9 @@
-#include <stdbool.h>
-
-#include "string.h"
 
 #ifndef _symtable
 #define _symtable
+#include <stdbool.h>
+#include "parser.h"
+#include "string.h"
 
 typedef struct input_param_list {
   int type;

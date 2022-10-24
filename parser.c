@@ -350,9 +350,7 @@ void expr_topostfix(expr** e) {
   expr_destroy(&a, false);
   return;
 }
-tlist* create_floats(tlist* t) {  // TODO
-  return t;
-}
+
 tlist* create_tlist() {
   tlist* t;
   maloc(t, sizeof(tlist));
@@ -369,7 +367,7 @@ tlist* create_tlist() {
       break;
     }
   }
-  return t;
+  return create_floats(t);
 }
 
 expr* read_expression(tlist* t, int* c) {
@@ -378,7 +376,7 @@ expr* read_expression(tlist* t, int* c) {
   expr* tmp;
   expr_init(&tmp);
   int brackets = 0;
-  while (t->t.type != _left_curly_bracket && t->t.type != _semicolon) {
+  while (t != NULL) {
     if (t == NULL) {
       eprint("Incorrect expression\n");
       exit(4);  // Add correct exit code
@@ -402,15 +400,14 @@ expr* read_expression(tlist* t, int* c) {
       brackets--;
       t = t->next;
       (*c)++;
-      if (brackets == 0) {
-        if (t->t.type == _semicolon || t->t.type == _left_curly_bracket)
-          return tmp;
-        else {
-          eprint("Syntax error\n");
-          exit(4);  // Add correct exit code
-        }
-      }
       continue;
+    }
+    if (t->t.type == _semicolon || t->t.type == _left_curly_bracket) {
+      if (brackets == 0) {
+        return tmp;
+      }
+      eprint("Syntax error\n");
+      exit(4);  // Add correct exit code
     }
     switch (t->t.type) {
       case _number:
@@ -446,4 +443,131 @@ expr* read_expression(tlist* t, int* c) {
     }
   }
   return NULL;
+}
+
+expr* add_parenthesis(expr* e) {
+  expr* tmp;
+  expr_init(&tmp);
+  int* lpar;
+  maloc(lpar, sizeof(int));
+  *lpar = _left_parenthesis;
+  expr_add(&tmp, 0, NULL, NULL, NULL, lpar, NULL, NULL);
+  tmp->next = e;
+  maloc(lpar, sizeof(int));
+  *lpar = _right_parenthesis;
+  expr_add(&tmp, 0, NULL, NULL, NULL, lpar, NULL, NULL);
+  return tmp;
+}
+tlist* create_floats(tlist* t) {
+  if (t == NULL) return NULL;
+  tlist* t_1 = t;
+  tlist* t_2 = t_1->next;
+  if (t_2 == NULL) return t;
+  tlist* t_3 = t_2->next;
+  if (t_3 == NULL) return t;
+  string* tmp;
+  maloc(tmp, sizeof(string));
+  string_init(tmp);
+  while (t_1 != NULL) {
+    if (t_2 != NULL && t_2->t.type == _dot) {
+      if (t_1->t.type == _number && t_3->t.type == _number) {
+        string_append(tmp, t_1->t.str->txt);
+        string_appendc(tmp, '.');
+        string_append(tmp, t_3->t.str->txt);
+        t_1->t.type = _decimalnumber;
+        string_destroy(t_1->t.str);
+        t_1->t.str = NULL;
+        maloc(t_1->t.f_val, sizeof(double));
+        *(t_1->t.f_val) = atof(tmp->txt);
+        string_destroy(tmp);
+        t_1->next = t_3->next;
+        string_destroy(t_3->t.str);
+        free(t_2);
+        free(t_3);
+      }
+    } else if (t_1->t.type == _number) {
+      maloc(t_1->t.i_val, sizeof(int));
+      *(t_1->t.i_val) = atoi(t_1->t.str->txt);
+      string_destroy(t_1->t.str);
+      t_1->t.str = NULL;
+    }
+    t_1 = t_1->next;
+    if (t_1 != NULL) t_2 = t_1->next;
+    if (t_2 != NULL) t_3 = t_2->next;
+  }
+  return create_negative(t);
+}
+tlist* create_negative(tlist* t) {
+  if (t == NULL) return NULL;
+  tlist* t_1 = t;
+  tlist* t_2 = t_1->next;
+  if (t_2 == NULL) return t;
+  tlist* t_3 = t_2->next;
+  if (t_3 == NULL || t_3->t.type == _right_parenthesis ||
+      t_3->t.type == _semicolon) {
+    if (t_1->t.type == _minus && t_2->t.type == _decimalnumber) {
+      *(t_2->t.f_val) *= -1;
+      free(t_1->t.f_val);
+      free(t_1);
+      return t_2;
+    }
+    return t;
+  }
+  while (t_3 != NULL) {
+    if (t_1->t.type >= _equals && t_1->t.type <= _not_typecheck) {
+      if (t_2->t.type == _minus && t_3->t.type == _decimalnumber) {
+        *(t_3->t.f_val) *= -1;
+        t_1->next = t_3;
+        free(t_2->t.f_val);
+        free(t_2);
+      }
+    }
+    t_1 = t_1->next;
+    if (t_1 != NULL) t_2 = t_1->next;
+    if (t_2 != NULL) t_3 = t_2->next;
+  }
+  return process_exponent(t);
+}
+
+tlist* process_exponent(tlist* t) {
+  if (t == NULL) return NULL;
+  tlist* t_1 = t;
+  tlist* t_2 = t_1->next;
+  if (t_2 == NULL) return t;
+  tlist* t_3 = t_2->next;
+  if (t_3 == NULL) return t;
+  while (t_3 != NULL) {
+    if (t_2->t.type == _e) {
+      if (t_1->t.type == _number) {
+        if (t_3->t.type == _number) {
+          maloc(t_1->t.f_val, sizeof(double));
+          *(t_1->t.f_val) =
+              pow((double)*(t_1->t.i_val), (double)*(t_3->t.i_val));
+          free(t_1->t.i_val);
+          t_1->t.i_val = NULL;
+          t_1->next = t_3->next;
+          free(t_2);
+          free(t_3->t.i_val);
+          free(t_3);
+          t_1->t.type = _decimalnumber;
+        }
+      } else if (t_1->t.type == _decimalnumber) {
+        if (t_3->t.type == _number) {
+          double* tmp;
+          maloc(tmp, sizeof(double));
+          *tmp = pow(*(t_1->t.f_val), (double)*(t_3->t.i_val));
+          free(t_1->t.f_val);
+          t_1->t.f_val = tmp;
+          t_1->next = t_3->next;
+          free(t_2);
+          free(t_3->t.i_val);
+          free(t_3);
+        }
+      }
+    }
+    t_1 = t_1->next;
+    if (t_1 != NULL) t_2 = t_1->next;
+    if (t_2 != NULL) t_3 = t_2->next;
+  }
+  return t;
 }

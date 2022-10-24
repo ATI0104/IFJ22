@@ -1,10 +1,14 @@
+
+#ifndef _parser
+#define _parser
+#include <math.h>
+
 #include "macros.h"
 #include "scanner.h"
 #include "stack.h"
 #include "string.h"
 #include "symtable.h"
-#ifndef _parser
-#define _parser
+
 #define output input
 typedef struct input {
   int* i;
@@ -74,5 +78,8 @@ void input_add(input** in, int* i, double* f, string* s, string* var);
 void input_destroy(input** in);
 tlist* create_tlist();
 expr* read_expression(tlist* t, int* c);
-tlist* create_floats(tlist *t);
+expr* add_parenthesis(expr* e);
+tlist* create_floats(tlist* t);
+tlist* create_negative(tlist* t);
+tlist* process_exponent(tlist* t);
 #endif

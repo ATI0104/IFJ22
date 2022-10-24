@@ -7,14 +7,16 @@ int main() {
   tlist* m = create_tlist();
   string a;
   string_init(&a);
-  #ifdef _skip_prolog_check
+#ifdef _skip_prolog_check
   expr* e;
   int c = 0;
+  m = create_floats(m);
   e = read_expression(m, &c);
   expr_print(e, false);
+  e = add_parenthesis(e);
   expr_topostfix(&e);
   expr_print(e, true);
-  #endif
+#endif
   // Prints out basic informations about the generated tokens
   token tok;
   while (m != NULL) {
@@ -22,7 +24,11 @@ int main() {
     printf("Token from line %d\n has a type of %d.\n", *(tok.linenum),
            tok.type);
     if (tok.i_val != NULL) {
+
       printf("It's int value = %d\n", *tok.i_val);
+    }
+        if (tok.f_val != NULL) {
+      printf("It's float value = %f\n", *tok.f_val);
     }
     if (tok.str != NULL) {
       printf("It's string value = \"%s\"\n", tok.str->txt);
@@ -79,11 +85,11 @@ void expr_print(expr* e, bool postfix) {
           printf(". ");
           break;
         case _left_parenthesis:
-        printf("( ");
-        break;
+          printf("( ");
+          break;
         case _right_parenthesis:
-        printf(") ");
-        break;
+          printf(") ");
+          break;
         default:
           printf("\"%d\"", *(e->op));
           break;

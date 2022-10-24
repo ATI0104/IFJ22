@@ -1,3 +1,5 @@
+#ifndef _token
+#define _token
 #include <regex.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -5,8 +7,6 @@
 
 #include "macros.h"
 #include "string.h"
-#ifndef _token
-#define _token
 #define LEXICAL_ERROR 1
 // Token types
 #define _EOF 100                  // 'EOF'
@@ -46,7 +46,7 @@
 #define _right_curly_bracket 134  // '}'
 #define _question_mark 135        // '?'
 #define _float 136                // 'float'
-#define _decimalnumber 137        // 3.1415
+#define _decimalnumber 137        // [0-9]+.1[0-9]+
 typedef struct token {
   int type;
   string *str;
