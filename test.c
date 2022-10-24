@@ -10,7 +10,6 @@ int main() {
 #ifdef _skip_prolog_check
   expr* e;
   int c = 0;
-  m = create_floats(m);
   e = read_expression(m, &c);
   expr_print(e, false);
   e = add_parenthesis(e);
