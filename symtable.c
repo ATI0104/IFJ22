@@ -76,3 +76,84 @@ void func_table_replace_by_rightmost(function_table *target, function_table **tr
     func_table_replace_by_rightmost(target, &(*tree)->right_func);
 }
 function_table *allocate_leaf() { return malloc(sizeof(function_table)); }
+
+void var_table_init(var_table **tree) {
+  *tree = NULL;
+  return;
+}
+
+void var_table_add(var_table **tree, var_table *var) {
+  if (*tree == NULL) {
+    *tree = var;
+    return;
+  }
+  if (strcmp((*tree)->name.txt, var->name.txt) > 0) {
+    var_table_add(&(*tree)->right_var, var);
+  } else
+    var_table_add(&(*tree)->left_var, var);
+}
+
+var_table *var_table_get(var_table **tree, string name) {
+  if (*tree == NULL) return NULL;
+  if (strcmp((*tree)->name.txt, name.txt) == 0) return *tree;
+  if (strcmp((*tree)->name.txt, name.txt) > 0) {
+    return var_table_get(&(*tree)->right_var, name);
+  } else
+    return var_table_get(&(*tree)->right_var, name);
+}
+
+void var_table_destroy(var_table **tree) {
+  if (*tree == NULL) return;
+  var_table_destroy(&((*tree)->left_var));
+  var_table_destroy(&((*tree)->right_var));
+  free((*tree)->name.txt);
+  free(*tree);
+  *tree = NULL;
+}
+
+void var_table_delete(var_table **tree, string name) {
+  if (*tree == NULL) return;
+  if (strcmp((*tree)->name.txt, name.txt) < 0) {
+    var_table_delete(&(*tree)->left_var, name);
+    return;
+  } else if (strcmp((*tree)->name.txt, name.txt) > 0) {
+    var_table_delete(&(*tree)->right_var, name);
+    return;
+  } else {
+    if ((*tree)->left_var == NULL && (*tree)->right_var == NULL) {
+      free(*tree);
+      *tree = NULL;
+    } else {
+      if ((*tree)->left_var != NULL && (*tree)->right_var != NULL) {
+        if ((*tree)->left_var->right_var != NULL) {
+          var_table_replace_by_rightmost(*tree, &((*tree)->left_var));
+        }
+      } else {
+        if ((*tree)->left_var == NULL) {
+          var_table *tmp = *tree;
+          *tree = (*tree)->right_var;
+          
+          free(tmp);
+        }
+        if ((*tree)->right_var == NULL) {
+          var_table *tmp = *tree;
+          *tree = (*tree)->left_var;
+          free(tmp);
+        }
+      }
+    }
+  }
+}
+
+void var_table_replace_by_rightmost(var_table *target, var_table **tree) {
+  if ((*tree)->right_var == NULL) {
+    target->name = (*tree)->name;
+    target->type = (*tree)->type;
+    target->num = (*tree)->num;
+    target->fl = (*tree)->fl;
+    target->s = (*tree)->s;
+    
+    var_table_delete(tree, target->name);
+  } else
+    var_table_replace_by_rightmost(target, &(*tree)->right_var);
+}

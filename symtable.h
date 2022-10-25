@@ -44,4 +44,16 @@ void function_table_delete(function_table **tree, string name);
 void func_table_replace_by_rightmost(function_table *target,
                                      function_table **tree);
 function_table *allocate_leaf();
+
+//functions for var_table
+void var_table_init(var_table **tree);
+void var_table_add(var_table **tree, var_table *leaf);
+var_table *var_table_get(var_table **tree, string name);
+void var_table_destroy(var_table **tree);
+void var_table_delete(var_table **tree, string name);
+void var_table_replace_by_rightmost(var_table *target,
+                                     var_table **tree);
+
+
+
 #endif
