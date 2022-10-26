@@ -6,6 +6,7 @@
 #include "string.h"
 
 typedef struct input_param_list {
+  string name;
   int type;
   struct input_param_list *next;
 } input_param_list;
@@ -22,7 +23,7 @@ typedef struct var_table {
 
 typedef struct function_table {
   string name;
-
+  bool built_in;
   // input param
   input_param_list input_type;
 
@@ -53,7 +54,6 @@ void var_table_destroy(var_table **tree);
 void var_table_delete(var_table **tree, string name);
 void var_table_replace_by_rightmost(var_table *target,
                                      var_table **tree);
-
-
+void add_predef_funs(function_table **tree);
 
 #endif

@@ -157,3 +157,6 @@ void var_table_replace_by_rightmost(var_table *target, var_table **tree) {
   } else
     var_table_replace_by_rightmost(target, &(*tree)->right_var);
 }
+void add_predef_funs(function_table **tree){
+ if(tree == NULL) return; 
+}
