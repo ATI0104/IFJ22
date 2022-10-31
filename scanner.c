@@ -37,6 +37,7 @@ token get_token() {
   t.f_val = NULL;
   t.str = NULL;
   int c = getc(stdin);
+  int j;
   bool one_line_comment = false;
   bool multi_line_comment = false;
   while (c != EOF) {
@@ -108,7 +109,7 @@ token get_token() {
       c = getc(stdin);
       continue;
     }
-    int j = is_whitespace(c, &one_line_comment, &multi_line_comment, &linenum);
+    j = is_whitespace(c, &one_line_comment, &multi_line_comment, &linenum);
     switch (j) {  // whitespace/comment skipper
       case 0:
         break;
@@ -133,6 +134,62 @@ token get_token() {
         string_appendc(word, c);
         for (size_t i = 0; i < 23; i++) {
           c = getc(stdin);
+          if (c == 13) {  // Compatibility with CRLF files
+            c = getc(stdin);
+          }
+          if (one_line_comment) {
+            if (c == '\n') {
+              linenum++;
+              one_line_comment = false;
+            }
+
+            i--;
+            continue;
+          }
+          if (multi_line_comment) {
+            if (c == '*') {
+              c = getc(stdin);
+              if (c == '/') {
+                multi_line_comment = false;
+              }
+            }
+            if (c == '\n') {
+              linenum++;
+
+              i--;
+              continue;
+            }
+
+            i--;
+            continue;
+          }
+          if (c == '\n') {
+            linenum++;
+
+            i--;
+            continue;
+          }
+          j = is_whitespace(c, &one_line_comment, &multi_line_comment,
+                            &linenum);
+          switch (j) {  // whitespace/comment skipper
+            case 0:
+              break;
+            case 1:
+            case 2:
+              i--;
+              continue;
+              break;
+            case 3:
+              if (prolog_found1) {
+                t.type = _divide;
+                string_destroy(word);
+                *lnum = linenum;
+                t.linenum = lnum;
+                return t;
+              } else
+                lexerror;
+              break;
+          }
           string_appendc(word, c);
         }
         if (strcmp(word->txt, "declare(strict_types=1);") == 0) {
@@ -405,6 +462,9 @@ token get_token() {
             else
               break;
           }
+          if (c == EOF) {
+            lexerror;
+          }
           string_appendc(word, c);
         }
         slash_decode(word);
@@ -484,10 +544,13 @@ token get_token() {
       lexerror;
     }
   }
-  t.type = _EOF;
-  *lnum = linenum;
-  t.linenum = lnum;
-  return t;
+  if (prolog_found1 && prolog_found && !one_line_comment && !multi_line_comment) {
+    t.type = _EOF;
+    *lnum = linenum;
+    t.linenum = lnum;
+    return t;
+  }
+  lexerror;
 }
 
 /**
@@ -498,7 +561,7 @@ token get_token() {
  * @param multi_line_comment
  * @param linenum
  * @return int returns 0 when it's not a whitespace, returns 1 when
- * it's, returns 2 when it's the beginning of a comment, returns 3 when
+ * it's ' ', returns 2 when it's the beginning of a comment, returns 3 when
  * it's division
  */
 int is_whitespace(char c, bool *one_line_comment, bool *multi_line_comment,

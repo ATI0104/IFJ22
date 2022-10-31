@@ -484,7 +484,11 @@ tlist* create_floats(tlist* t) {
         string_destroy(t_3->t.str);
         free(t_2);
         free(t_3);
-      }
+      } else if ((t_1->t.type == _string || t_1->t.type == _variable) &&
+                 (t_3->t.type == _string || t_3->t.type == _variable))
+        ;
+      else
+        exit(1);
     } else if (t_1->t.type == _number) {
       maloc(t_1->t.i_val, sizeof(int));
       *(t_1->t.i_val) = atoi(t_1->t.str->txt);
