@@ -82,4 +82,6 @@ expr* add_parenthesis(expr* e);
 tlist* create_floats(tlist* t);
 tlist* create_negative(tlist* t);
 tlist* process_exponent(tlist* t);
+
+void add_func(function_table **tree);
 #endif
