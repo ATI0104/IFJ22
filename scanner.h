@@ -60,4 +60,5 @@ int is_whitespace(char c, bool *one_line_comment, bool *multi_line_comment,
 void get_identificator(string *word, char *re);
 bool regex_check(char *txt, char *re);
 void slash_decode(string *str);
+
 #endif
