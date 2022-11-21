@@ -272,3 +272,12 @@ void var_table_replace_by_rightmost(var_table *target, var_table **tree) {
 void add_predef_funs(function_table **tree){
  if(tree == NULL) return; 
 }
+
+input_param_list *insert_top(string name, int type, input_param_list *current) {
+  input_param_list *new_list;
+  maloc(new_list, sizeof(input_param_list));
+  new_list->name = name;
+  new_list->type = type;
+  new_list->next = current;
+  return new_list;
+}
