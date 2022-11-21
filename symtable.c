@@ -2,6 +2,118 @@
 
 void function_table_init(function_table **tree) {
   *tree = NULL;
+ /*Built-in functions*/
+
+  // reads()
+  function_table *reads_ft;
+  maloc(reads_ft, sizeof(function_table));
+  reads_ft->input_type = NULL;
+  string_set(&(*reads_ft).name, "reads");
+  reads_ft->output_type = _string;
+  function_table_add(tree, reads_ft);
+
+  // readi()
+  function_table *readi_ft;
+  maloc(readi_ft, sizeof(function_table));
+  readi_ft->input_type = NULL;
+  string_set(&(*readi_ft).name, "readi");
+  readi_ft->output_type = _int;
+  function_table_add(tree, readi_ft);
+
+  // readf()
+  function_table *readf_ft;
+  maloc(readf_ft, sizeof(function_table));
+  readf_ft->input_type = NULL;
+  string_set(&(*readf_ft).name, "readf");
+  readf_ft->output_type = _float;
+  function_table_add(&(*tree), readf_ft);
+  /*SPEC FUNCTION*/
+
+  // write(term)
+  function_table *write_ft;
+  maloc(write_ft, sizeof(function_table));
+  write_ft->input_type = NULL;
+  string_set(&(write_ft->name), "write");
+  write_ft->output_type = _null;
+  function_table_add(&(*tree), write_ft);
+
+  // floatval(term) SPEC FUNCTION
+  function_table *floatval_ft;
+  maloc(floatval_ft, sizeof(function_table));
+  // input_param_list params;
+  // input can be null/int/float/bool/string
+  floatval_ft->input_type = NULL;
+  string_set(&(*floatval_ft).name, "floatval");
+  floatval_ft->output_type = _float;
+  function_table_add(&(*tree), floatval_ft);
+
+  // intval(term)
+  function_table *intval_ft;
+  maloc(intval_ft, sizeof(function_table));
+  // input_param_list params;
+  // input can be null/int/float/bool/string
+  intval_ft->input_type = NULL;
+  string_set(&(*intval_ft).name, "intval");
+  intval_ft->output_type = _int;
+  function_table_add(&(*tree), intval_ft);
+
+  // strval(term)
+  function_table *strval_ft;
+  maloc(strval_ft, sizeof(function_table));
+  // input can be string/null
+  strval_ft->input_type = NULL;
+  string_set(&(*intval_ft).name, "strval");
+  strval_ft->output_type = _string; 
+  function_table_add(&(*tree), strval_ft);
+
+  // strlen()
+  function_table *strlen_ft;
+  input_param_list *params = NULL;
+  maloc(strlen_ft, sizeof(function_table));
+  string s;
+  string_set(&s, "s");
+  params = insert_top(s, _string, params);
+  string_set(&(*strlen_ft).name, "strlen");
+  strlen_ft->input_type = params;
+  strlen_ft->output_type = _int;  //_int
+  function_table_add(&(*tree), strlen_ft);
+
+  // substring(string s, int id, int id2)
+  function_table *substring_ft;
+  maloc(substring_ft, sizeof(function_table));
+  input_param_list *param_substr = NULL;
+  string_set(&s, "s");
+  param_substr = insert_top(s, _string, param_substr);
+  string_set(&s, "i");
+  param_substr = insert_top(s, _int, param_substr);
+  string_set(&s, "j");
+  param_substr = insert_top(s, _int, param_substr);
+  substring_ft->input_type = param_substr;
+  string_set(&(*substring_ft).name, "substring");
+  substring_ft->output_type = _string;
+  function_table_add(&(*tree), substring_ft);
+
+  // ord(string c)
+  function_table *ord_ft;
+  maloc(ord_ft, sizeof(function_table));
+  input_param_list *param_ord = NULL;
+  string_set(&s, "c");
+  param_ord = insert_top(s, _string, param_ord);
+  ord_ft->input_type = param_ord;
+  string_set(&(*ord_ft).name, "ord");
+  ord_ft->output_type = _int;
+  function_table_add(&(*tree), ord_ft);
+
+  // chr(int i)
+  function_table *chr_ft;
+  maloc(chr_ft, sizeof(function_table));
+  input_param_list *param_chr = NULL;
+  string_set(&s, "i");
+  param_chr = insert_top(s, _int, param_chr);
+  chr_ft->input_type = param_chr;
+  string_set(&(*chr_ft).name, "chr");
+  chr_ft->output_type = _string;
+  function_table_add(tree, chr_ft);
   return;
 }
 void function_table_add(function_table **tree, function_table *leaf) {
