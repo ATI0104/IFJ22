@@ -1,5 +1,5 @@
 #include "parser.h"
-my_favorites fav;  //<3 // This is the only global variable in the program let's
+my_favorites fav;  //♥ This is the only global variable in the program let's
                    // keep it that way :)
 void AST_init(AST** a) {
   if (a == NULL) return;
