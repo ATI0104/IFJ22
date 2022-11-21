@@ -83,5 +83,5 @@ tlist* create_floats(tlist* t);
 tlist* create_negative(tlist* t);
 tlist* process_exponent(tlist* t);
 
-void add_func(function_table **tree);
+void add_func(function_table **tree, tlist *t);
 #endif
