@@ -25,7 +25,7 @@ typedef struct function_table {
   string name;
   bool built_in;
   // input param
-  input_param_list input_type;
+  input_param_list *input_type;
 
   // output type
   int output_type;

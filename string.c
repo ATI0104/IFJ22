@@ -91,6 +91,7 @@ void string_deletefirst(string* str) {
     str->txt = tmp->txt;
     tmp->txt = swap;
     string_destroy(tmp);
+    free(tmp);
   }
   string_destroy(str);
 }

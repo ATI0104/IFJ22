@@ -430,7 +430,7 @@ expr* read_expression(tlist* t, int* c) {
         t = t->next;
         (*c)++;
         break;
-      case _idenftificator:
+      case _identificator:
         // TODO load function input params
         expr_add(&tmp, 0, NULL, NULL, NULL, NULL, t->t.str, NULL);
         t = t->next;
@@ -497,7 +497,7 @@ tlist* create_floats(tlist* t) {
     }
     t_1 = t_1->next;
     if (t_1 != NULL) t_2 = t_1->next;
-    if (t_2 != NULL) t_3 = t_2->next;
+    if (t_1 != NULL && t_2 != NULL) t_3 = t_2->next;
   }
   return create_negative(t);
 }
@@ -528,7 +528,7 @@ tlist* create_negative(tlist* t) {
     }
     t_1 = t_1->next;
     if (t_1 != NULL) t_2 = t_1->next;
-    if (t_2 != NULL) t_3 = t_2->next;
+    if (t_1 != NULL && t_2 != NULL) t_3 = t_2->next;
   }
   return process_exponent(t);
 }
@@ -551,8 +551,10 @@ tlist* process_exponent(tlist* t) {
           t_1->t.i_val = NULL;
           t_1->next = t_3->next;
           free(t_2);
+          t_2 = NULL;
           free(t_3->t.i_val);
           free(t_3);
+          t_3 = NULL;
           t_1->t.type = _decimalnumber;
         }
       } else if (t_1->t.type == _decimalnumber) {
@@ -564,83 +566,84 @@ tlist* process_exponent(tlist* t) {
           t_1->t.f_val = tmp;
           t_1->next = t_3->next;
           free(t_2);
+          t_2 = NULL;
           free(t_3->t.i_val);
           free(t_3);
+          t_3 = NULL;
         }
       }
     }
     t_1 = t_1->next;
     if (t_1 != NULL) t_2 = t_1->next;
-    if (t_2 != NULL) t_3 = t_2->next;
+    if (t_1 != NULL && t_2 != NULL) t_3 = t_2->next;
   }
   return t;
 }
 
-
-void add_func(function_table **tree, tlist *t){
-token current = t->t;
-while(current.type != _EOF ){
-  if(current.type == _function){ // _function found
-  t = t->next;
-  current=t->t;
-  if(current.type == _identificator){ // _identificator found
-    
-    if(function_table_get(tree, *current.str) != NULL){
-      eprint("Function table already contains this function.");
-    }
-    else
-    {
-    function_table *func_ft;
-    maloc(func_ft, sizeof(function_table));
-    string_set(&(*func_ft).name, current.str->txt); //name
-    t = t->next;
-    current=t->t;
-    if(current.type == _left_parenthesis){
+void add_func(function_table** tree, tlist* t) {
+  token current = t->t;
+  while (current.type != _EOF) {
+    if (current.type == _function) {  // _function found
       t = t->next;
-      current=t->t; //type
-      
-      while(current.type == _int || current.type == _float || current.type == _string){
-        if(t->next->t.type == _variable){ // var
-          input_param_list *params = NULL;
-          string s;
-          
-          string_set(&s, t->next->t.str->txt);
-          params = insert_top(s, current.type, params);
+      current = t->t;
+      if (current.type == _identificator) {  // _identificator found
+
+        if (function_table_get(tree, *current.str) != NULL) {
+          eprint("Function table already contains this function.");
+        } else {
+          function_table* func_ft;
+          maloc(func_ft, sizeof(function_table));
+          string_set(&(*func_ft).name, current.str->txt);  // name
           t = t->next;
-          current=t->t;
-          if(current.type == _comma){
+          current = t->t;
+          if (current.type == _left_parenthesis) {
             t = t->next;
-            current=t->t;
-            continue; //start again
-          }else if(current.type == _right_parenthesis){ //end of input parameters
-            func_ft->input_type = params;
-            break;
-          }else{
+            current = t->t;  // type
+
+            while (current.type == _int || current.type == _float ||
+                   current.type == _string) {
+              if (t->next->t.type == _variable) {  // var
+                input_param_list* params = NULL;
+                string s;
+
+                string_set(&s, t->next->t.str->txt);
+                params = insert_top(s, current.type, params);
+                t = t->next;
+                current = t->t;
+                if (current.type == _comma) {
+                  t = t->next;
+                  current = t->t;
+                  continue;  // start again
+                } else if (current.type ==
+                           _right_parenthesis) {  // end of input parameters
+                  func_ft->input_type = params;
+                  break;
+                } else {
+                  eprint("Invalid input parameters");
+                }
+              } else {
+                eprint("Invalid input parameters");
+              }
+            }  // end while
+          } else {
             eprint("Invalid input parameters");
           }
-        }else{
-          eprint("Invalid input parameters");
-        }
-      } //end while
-    }else{
-      eprint("Invalid input parameters");
-    }
-    t = t->next;
-    current=t->t;
-    if(current.type==_semicolon){
-      if(current.type == _int || current.type == _float || current.type == _string || current.type == _void){
-        func_ft->output_type=current.type;
-      }else{
-        eprint("Invalid return value.");
-      }
-    }else{
-      eprint("Missing return value.");
-    }
+          t = t->next;
+          current = t->t;
+          if (current.type == _colon) {
+            if (current.type == _int || current.type == _float ||
+                current.type == _string || current.type == _void) {
+              func_ft->output_type = current.type;
+            } else {
+              eprint("Invalid return value.");
+            }
+          } else {
+            eprint("Missing return value.");
+          }
 
-    function_table_add(tree, func_ft);
+          function_table_add(tree, func_ft);
+        }
+      }
+    }
   }
-  
-  }
-  }
- }
 }

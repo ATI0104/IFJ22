@@ -2,7 +2,7 @@
 //Heavy inspiration taken from my IAL project
 void Stack_Init(Stack** stack) {
   if (stack == NULL) return;
-  maloc(*stack, sizeof(stack));
+  maloc(*stack, sizeof(Stack));
   (*stack)->topIndex = -1;  // topIndex = -1 marks empty stack
   (*stack)->size = 0;
   return;
