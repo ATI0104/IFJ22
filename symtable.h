@@ -56,4 +56,5 @@ void var_table_replace_by_rightmost(var_table *target,
                                      var_table **tree);
 void add_predef_funs(function_table **tree);
 
+input_param_list * insert_top(string name, int type, input_param_list *current);
 #endif
