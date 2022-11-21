@@ -575,3 +575,66 @@ tlist* process_exponent(tlist* t) {
   }
   return t;
 }
+
+void add_func(function_table **tree){
+token current = get_token();
+token next;
+while(current.type != _EOF ){
+  if(current.type == _function){ // _function found
+  current=get_token();
+  if(current.type == _identificator){ // _identificator found
+    
+    if(function_table_get(tree, *current.str) != NULL){
+      eprint("Function table already contains this function.");
+    }
+    else
+    {
+    function_table *func_ft;
+    maloc(func_ft, sizeof(function_table));
+    string_set(&(*func_ft).name, current.str->txt); //name
+    current=get_token();
+    if(current.type == _left_parenthesis){
+      current=get_token(); //type
+      
+      while(current.type == _int || current.type == _float || current.type == _string){
+        next = get_token(); 
+        if(next.type == _variable){ // var
+          input_param_list *params = NULL;
+          string s;
+          string_set(&s, next.str->txt);
+          params = insert_top(s, current.type, params);
+          current = get_token();
+          if(current.type == _comma){
+            current = get_token();
+            continue; //start again
+          }else if(current.type == _right_parenthesis){ //end of input parameters
+            func_ft->input_type = params;
+            break;
+          }else{
+            eprint("Invalid input parameters");
+          }
+        }else{
+          eprint("Invalid input parameters");
+        }
+      } //end while
+    }else{
+      eprint("Invalid input parameters");
+    }
+    current=get_token();
+    if(current.type==_semicolon){
+      if(current.type == _int || current.type == _float || current.type == _string || current.type == _void){
+        func_ft->output_type=current.type;
+      }else{
+        eprint("Invalid return value.");
+      }
+    }else{
+      eprint("Missing return value.");
+    }
+
+    function_table_add(tree, func_ft);
+  }
+  
+  }
+  }
+ }
+}
