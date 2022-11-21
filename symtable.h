@@ -30,7 +30,7 @@ typedef struct function_table {
   // output type
   int output_type;
 
-  var_table variable;
+  var_table *variable;
 
   struct function_table *left_func;
   struct function_table *right_func;

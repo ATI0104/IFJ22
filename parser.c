@@ -1,5 +1,6 @@
 #include "parser.h"
-
+my_favorites fav;  //<3 // This is the only global variable in the program let's
+                   // keep it that way :)
 void AST_init(AST** a) {
   if (a == NULL) return;
   *a = NULL;
@@ -18,7 +19,7 @@ void AST_add(AST** a, string* f_name, code* code) {
     tmp = tmp->next;
   }
   tmp->funname = f_name;
-  tmp->code = code;
+  tmp->Code = code;
   tmp->next = NULL;
   tmp->first = *a;
 }
@@ -29,7 +30,7 @@ void AST_destroy(AST** a) {
   AST* tmp_n = tmp->next;
   if (tmp_n == NULL) {
     string_destroy(tmp->funname);
-    code_destroy(&(tmp->code));
+    code_destroy(&(tmp->Code));
     free(tmp);
     *a = NULL;
     return;
@@ -39,7 +40,7 @@ void AST_destroy(AST** a) {
     tmp = tmp->next;
   }
   string_destroy(tmp_n->funname);
-  code_destroy(&(tmp_n->code));
+  code_destroy(&(tmp_n->Code));
   free(tmp_n);
   tmp->next = NULL;
   AST_destroy(a);
@@ -430,9 +431,15 @@ expr* read_expression(tlist* t, int* c) {
         t = t->next;
         (*c)++;
         break;
-      case _identificator:
-        // TODO load function input params
-        expr_add(&tmp, 0, NULL, NULL, NULL, NULL, t->t.str, NULL);
+      case _identificator:;
+        int p;
+        call* cal = load_function_call(t, fav.f, fav.v, &p);
+        expr_add(&tmp, 0, NULL, NULL, NULL, NULL, NULL, cal);
+        while (p != 0) {
+          t = t->next;
+          (*c)++;
+          p--;
+        }
         t = t->next;
         (*c)++;
         break;
@@ -579,71 +586,236 @@ tlist* process_exponent(tlist* t) {
   }
   return t;
 }
-
-void add_func(function_table** tree, tlist* t) {
-  token current = t->t;
-  while (current.type != _EOF) {
-    if (current.type == _function) {  // _function found
+input_param_list* load_input_params(tlist* t, int* skip) {
+  *skip = 0;
+  input_param_list* l;
+  maloc(l, sizeof(input_param_list));
+  input_param_list* tmp;
+  while (t->t.type != _right_parenthesis) {
+    if (t->t.type == _comma) {
       t = t->next;
-      current = t->t;
-      if (current.type == _identificator) {  // _identificator found
-
-        if (function_table_get(tree, *current.str) != NULL) {
-          eprint("Function table already contains this function.");
+      *skip = *skip + 1;
+      continue;
+    }
+    switch (t->t.type) {
+      case _int:;
+        tmp->type = _int;
+        t = t->next;
+        *skip = *skip + 1;
+        if (t->t.type == _variable) {
+          tmp->name = *(t->t.str);
         } else {
-          function_table* func_ft;
-          maloc(func_ft, sizeof(function_table));
-          string_set(&(*func_ft).name, current.str->txt);  // name
+          eprint("Error: Expected variable name after int\n");
+          exit(4);  // Replace with correct error code
+        }
+        break;
+      case _float:;
+        tmp->type = _float;
+        t = t->next;
+        *skip = *skip + 1;
+        if (t->t.type == _variable) {
+          tmp->name = *(t->t.str);
+        } else {
+          eprint("Error: Expected variable name after float\n");
+          exit(4);  // Replace with correct error code
+        }
+        break;
+      case _string:
+
+        tmp->type = _string;
+        t = t->next;
+        *skip = *skip + 1;
+        if (t->t.type == _variable) {
+          tmp->name = *(t->t.str);
+        } else {
+          eprint("Error: Expected variable name after string\n");
+          exit(4);  // Replace with correct error code
+        }
+        break;
+      case _null:
+
+        tmp->type = _null;
+        break;
+      default:
+        eprint("Error: Expected type after comma\n");
+        exit(4);  // Replace with correct error code
+        break;
+    }
+    tmp = tmp->next;
+    *skip = *skip + 1;
+  }
+  if (*skip == 0) {  // Satisfying the compiler
+    return NULL;
+  }
+  return l;
+}
+void add_func(function_table** tree, tlist* t) {
+  if (t == NULL) return;
+  while (t->t.type != _EOF) {
+    if (t->t.type == _function) {
+      function_table* tmp;
+      maloc(tmp, sizeof(function_table));
+      t = t->next;
+      if (t->t.type == _identificator) {
+        tmp->name = *(t->t.str);
+        t = t->next;
+        if (t->t.type == _left_parenthesis) {
           t = t->next;
-          current = t->t;
-          if (current.type == _left_parenthesis) {
+          int skip = 0;
+          tmp->input_type = load_input_params(t, &skip);
+          while (skip) {
             t = t->next;
-            current = t->t;  // type
-
-            while (current.type == _int || current.type == _float ||
-                   current.type == _string) {
-              if (t->next->t.type == _variable) {  // var
-                input_param_list* params = NULL;
-                string s;
-
-                string_set(&s, t->next->t.str->txt);
-                params = insert_top(s, current.type, params);
-                t = t->next;
-                current = t->t;
-                if (current.type == _comma) {
-                  t = t->next;
-                  current = t->t;
-                  continue;  // start again
-                } else if (current.type ==
-                           _right_parenthesis) {  // end of input parameters
-                  func_ft->input_type = params;
-                  break;
-                } else {
-                  eprint("Invalid input parameters");
-                }
-              } else {
-                eprint("Invalid input parameters");
+            skip--;
+          }
+          if (t->t.type == _right_parenthesis) {
+            t = t->next;
+            if (t->t.type == _colon) {
+              t = t->next;
+              if (t->t.type == _question_mark)
+                t = t->next;  // Should we deal
+                              // with this?
+              if (t->t.type == _int) {
+                tmp->output_type = _int;
               }
-            }  // end while
-          } else {
-            eprint("Invalid input parameters");
-          }
-          t = t->next;
-          current = t->t;
-          if (current.type == _colon) {
-            if (current.type == _int || current.type == _float ||
-                current.type == _string || current.type == _void) {
-              func_ft->output_type = current.type;
+              if (t->t.type == _float) {
+                tmp->output_type = _float;
+              }
+              if (t->t.type == _string) {
+                tmp->output_type = _string;
+              }
+              if (t->t.type == _null) {
+                tmp->output_type = _null;
+              }
             } else {
-              eprint("Invalid return value.");
+              tmp->output_type = _null;
             }
-          } else {
-            eprint("Missing return value.");
           }
-
-          function_table_add(tree, func_ft);
         }
       }
+      function_table_add(tree, tmp);
+    }
+    t = t->next;
+  }
+}
+var_table* load_variables(tlist* t) {
+  if (t == NULL) {
+    return NULL;
+  }
+  var_table* root = NULL;
+  var_table* leaf = NULL;
+  int count = 1;
+  bool first = true;
+  while (count) {
+    if (t->t.type == _left_curly_bracket) {
+      if (!first)
+        count++;
+      else {
+        first = false;
+      }
+    } else if (t->t.type == _right_curly_bracket) {
+      count--;
+    } else if (t->t.type == _variable) {
+      tlist* temp = t->next;
+      if (temp->t.type == _equals) {
+        maloc(leaf, sizeof(var_table));
+        leaf->name = *(t->t.str);
+        var_table_add(&root, leaf);
+      } else {
+        if (var_table_get(&root, *(t->t.str)) != NULL) {
+          eprint("Variable %s is not declared\n", t->t.str->txt);
+          exit(4);  // Replace with correct exit code
+        }
+      }
+      t = t->next;
     }
   }
+  return root;
+}
+
+// Returns the called function, the first item in tlist should be the function's
+// name
+call* load_function_call(tlist* t, function_table* f, var_table* v, int* skip) {
+  if (t == NULL || skip == NULL) {
+    return NULL;
+  }
+  *skip = 0;
+  if (t->t.type == _identificator) {
+    function_table* temp = function_table_get(&f, *(t->t.str));
+    if (temp == NULL) {
+      eprint("Function %s is not declared\n", t->t.str->txt);
+      exit(4);  // Replace with correct exit code
+    }
+    t = t->next;
+    *skip = *skip + 1;
+    if (t->t.type != _left_parenthesis) {
+      eprint("Expected left parenthesis after function name\n");
+      exit(4);  // Replace with correct exit code
+    }
+    t = t->next;
+    *skip = *skip + 1;
+    call* c;
+    maloc(c, sizeof(call));
+    input* i;
+    maloc(i, sizeof(input));
+    input* tmp = i;
+    while (t->t.type != _right_parenthesis) {
+      if (t->t.type == _comma) {
+        t = t->next;
+        *skip = *skip + 1;
+        continue;
+      }
+      switch (t->t.type) {
+        case _number:
+          tmp->i = t->t.i_val;
+          maloc(tmp->next, sizeof(input));
+          tmp = tmp->next;
+          t = t->next;
+          *skip = *skip + 1;
+          continue;
+          break;
+        case _decimalnumber:
+          tmp->f = t->t.f_val;
+          maloc(tmp->next, sizeof(input));
+          tmp = tmp->next;
+          t = t->next;
+          *skip = *skip + 1;
+          continue;
+          break;
+        case _variable:
+          tmp->var = t->t.str;
+          if (var_table_get(&v, *(t->t.str)) == NULL) {
+            eprint("Variable %s is not declared\n", t->t.str->txt);
+            exit(4);  // Replace with correct exit code
+          }
+          maloc(tmp->next, sizeof(input));
+          tmp = tmp->next;
+          t = t->next;
+          *skip = *skip + 1;
+          continue;
+          break;
+        case _string:
+          tmp->s = t->t.str;
+          maloc(tmp->next, sizeof(input));
+          tmp = tmp->next;
+          t = t->next;
+          *skip = *skip + 1;
+          continue;
+          break;
+        case _null:
+          tmp->null = true;
+          maloc(tmp->next, sizeof(input));
+          tmp = tmp->next;
+          t = t->next;
+          *skip = *skip + 1;
+          continue;
+          break;
+        default:
+          eprint("Invalid input type\n");
+          exit(4);  // Replace with correct exit code
+          break;
+      }
+    }
+    return c;
+  }
+  return NULL;
 }
