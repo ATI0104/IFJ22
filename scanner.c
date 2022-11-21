@@ -514,7 +514,7 @@ token get_token() {
         string_appendc(word, c);
         if (regex_check(word->txt, "^[a-zA-Z_]+$")) {  // identificator
           get_identificator(word, "^[a-zA-Z_]+$");
-          t.type = _idenftificator;
+          t.type = _identificator;
           t.str = word;
           *lnum = linenum;
           t.linenum = lnum;
@@ -535,7 +535,7 @@ token get_token() {
       lexerror;
     }
     if (regex_check(word->txt, "^[a-zA-Z_]+$")) {
-      t.type = _idenftificator;
+      t.type = _identificator;
       t.str = word;
       *lnum = linenum;
       t.linenum = lnum;
