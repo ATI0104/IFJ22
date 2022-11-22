@@ -1,4 +1,13 @@
 #include "scanner.h"
+
+/**
+ * @brief regex function
+ * 
+ * @param txt input string
+ * @param re regex to match
+ * @return true 
+ * @return false 
+ */
 bool regex_check(char *txt, char *re) {
   if (re == NULL) return false;
   regex_t *regex = calloc(1, sizeof(regex_t));
@@ -18,6 +27,11 @@ bool regex_check(char *txt, char *re) {
   if (!reti) return true;
   return false;
 }
+/**
+ * @brief Generate a token from stdin
+ * 
+ * @return token 
+ */
 token get_token() {
   static int linenum = 1;
   int *lnum;
@@ -587,6 +601,13 @@ int is_whitespace(char c, bool *one_line_comment, bool *multi_line_comment,
   }
   return 0;
 }
+
+/**
+ * @brief Reads from stdin until it finds a character that is not matched by the regex
+ * 
+ * @param word // string where the read characters are appended
+ * @param re  // regex
+ */
 void get_identificator(string *word, char *re) {
   int c;
   bool match = false;
@@ -600,7 +621,11 @@ void get_identificator(string *word, char *re) {
     ungetc(c, stdin);
   }
 }
-
+/**
+ * @brief Converts special characters to their IFJ22 representation
+ * 
+ * @param str 
+ */
 void slash_decode(string *str) {
   if (str == NULL) return;
   char *tmp1 = str->txt;

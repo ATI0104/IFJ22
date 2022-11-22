@@ -39,7 +39,7 @@
 #define _typecheck 127            // '==='
 #define _not_typecheck 128        // '!=='
 #define _array 129                // '"'
-#define _identificator 130       //[a-zA-Z_]+
+#define _identificator 130        //[a-zA-Z_]+
 #define _comma 131                // ','
 #define _number 132               // [0-9]+
 #define _left_curly_bracket 133   // '{'
