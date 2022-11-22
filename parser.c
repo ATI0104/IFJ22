@@ -876,7 +876,7 @@ bool var_set() {
 
 bool function_call() {
   if (fav.t->t.type == _identificator) {
-    if (function_table_get(fav.f, fav.t->t.str) == NULL) {
+    if (function_table_get(&fav.f, *(fav.t->t.str)) == NULL) {
       function_undefined(*(fav.t->t.linenum));
     }
     fav.t = fav.t->next;
