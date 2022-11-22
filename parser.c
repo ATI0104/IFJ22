@@ -575,3 +575,333 @@ call* load_function_call(tlist* t, function_table* f, var_table* v, int* skip) {
   }
   return NULL;
 }
+
+/*Syntax analysis starts here*/
+bool check_syntax(tlist* t, function_table* f, var_table* v) {
+  fav.t = t;
+  fav.f = f;
+  fav.v = v;
+  return prog();
+}
+bool prog() {
+  if (fav.t->t.type == _prolog) {
+    fav.t = fav.t->next;
+    return prog2();
+  }
+  return false;
+}
+
+bool prog2() {
+  if (fav.t->t.type == _EOF) {
+    return true;
+  }
+  if (fav.t->t.type == _function) {
+    return function_definition() && prog2();
+  } else {
+    return body() && prog2();
+  }
+}
+
+bool function_definition() {
+  if (fav.t->t.type == _function) {
+    fav.t = fav.t->next;
+    if (fav.t->t.type == _identificator) {
+      fav.t = fav.t->next;
+      if (fav.t->t.type == _left_parenthesis) {
+        fav.t = fav.t->next;
+        if (params()) {
+          if (fav.t->t.type == _right_parenthesis) {
+            fav.t = fav.t->next;
+            if (fav.t->t.type == _colon) {
+              fav.t = fav.t->next;
+              if (type()) {
+                if (fav.t->t.type == _left_curly_bracket) {
+                  fav.t = fav.t->next;
+                  if (body()) {
+                    if (fav.t->t.type == _right_curly_bracket) {
+                      fav.t = fav.t->next;
+                      return true;
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  return false;
+}
+
+bool params() {
+  while (fav.t->t.type != _right_parenthesis) {
+    if (fav.t->t.type == _variable) {
+      fav.t = fav.t->next;
+      if (fav.t->t.type == _comma) {
+        fav.t = fav.t->next;
+        continue;
+      }
+    } else if (fav.t->t.type == _number) {
+      fav.t = fav.t->next;
+      if (fav.t->t.type == _comma) {
+        fav.t = fav.t->next;
+        continue;
+      }
+    } else if (fav.t->t.type == _decimalnumber) {
+      fav.t = fav.t->next;
+      if (fav.t->t.type == _comma) {
+        fav.t = fav.t->next;
+        continue;
+      }
+    } else if (fav.t->t.type == _string) {
+      fav.t = fav.t->next;
+      if (fav.t->t.type == _comma) {
+        fav.t = fav.t->next;
+        continue;
+      }
+    } else if (fav.t->t.type == _null) {
+      fav.t = fav.t->next;
+      if (fav.t->t.type == _comma) {
+        fav.t = fav.t->next;
+        continue;
+      }
+    }
+    return false;
+  }
+  if (fav.t->t.type == _right_parenthesis) {
+    return true;
+  }
+  return false;
+}
+bool def_params() {
+  while (fav.t->t.type != _right_parenthesis) {
+    if (type()) {
+      if (fav.t->t.type == _variable) {
+        fav.t = fav.t->next;
+        if (fav.t->t.type == _comma) {
+          fav.t = fav.t->next;
+          continue;
+        }
+      } else if (fav.t->t.type == _number) {
+        fav.t = fav.t->next;
+        if (fav.t->t.type == _comma) {
+          fav.t = fav.t->next;
+          continue;
+        }
+      } else if (fav.t->t.type == _decimalnumber) {
+        fav.t = fav.t->next;
+        if (fav.t->t.type == _comma) {
+          fav.t = fav.t->next;
+          continue;
+        }
+      } else if (fav.t->t.type == _string) {
+        fav.t = fav.t->next;
+        if (fav.t->t.type == _comma) {
+          fav.t = fav.t->next;
+          continue;
+        }
+      } else if (fav.t->t.type == _null) {
+        fav.t = fav.t->next;
+        if (fav.t->t.type == _comma) {
+          fav.t = fav.t->next;
+          continue;
+        }
+      }
+    }
+    return false;
+  }
+  if (fav.t->t.type == _right_parenthesis) {
+    return true;
+  }
+  return false;
+}
+bool type() {
+  if (fav.t->t.type == _question_mark) {
+    fav.t = fav.t->next;
+  }
+  if (fav.t->t.type == _int || fav.t->t.type == _float ||
+      fav.t->t.type == _string || fav.t->t.type == _void) {
+    fav.t = fav.t->next;
+    return true;
+  }
+  return false;
+}
+
+bool body() {
+  switch (fav.t->t.type) {
+    case _if:
+      if (if_statement()) {
+        return body();
+      }
+      return false;
+      break;
+    case _while:
+      if (while_statement()) {
+        return body();
+      }
+      return false;
+      break;
+    case _return:
+      if (return_statement()) {
+        if (fav.t->t.type == _semicolon) {
+          fav.t = fav.t->next;
+          return body();
+        }
+      }
+      return false;
+      break;
+    case _identificator:
+      if (function_call()) {
+        if (fav.t->t.type == _semicolon) {
+          fav.t = fav.t->next;
+          return body();
+        }
+      }
+      return false;
+      break;
+    case _variable:
+      if (var_set()) {
+        if (fav.t->t.type == _semicolon) {
+          fav.t = fav.t->next;
+          return body();
+        }
+      }
+      return false;
+      break;
+    case _right_curly_bracket:
+      return true;
+      break;
+    default:
+      return false;
+      break;
+  }
+}
+
+bool if_statement() {
+  if (fav.t->t.type == _if) {
+    fav.t = fav.t->next;
+    if (fav.t->t.type == _left_parenthesis) {
+      fav.t = fav.t->next;
+      if (expression_check()) {
+        if (fav.t->t.type == _right_parenthesis) {
+          fav.t = fav.t->next;
+          if (fav.t->t.type == _left_curly_bracket) {
+            fav.t = fav.t->next;
+            if (body()) {
+              if (fav.t->t.type == _right_curly_bracket) {
+                fav.t = fav.t->next;
+                if (else_statement()) {
+                  return true;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  return false;
+}
+
+bool else_statement() {
+  if (fav.t->t.type == _else) {
+    fav.t = fav.t->next;
+    if (fav.t->t.type == _left_curly_bracket) {
+      fav.t = fav.t->next;
+      if (body()) {
+        if (fav.t->t.type == _right_curly_bracket) {
+          fav.t = fav.t->next;
+          return true;
+        }
+      }
+    }
+  }
+  return true;
+}
+
+bool while_statement() {
+  if (fav.t->t.type == _while) {
+    fav.t = fav.t->next;
+    if (fav.t->t.type == _left_parenthesis) {
+      fav.t = fav.t->next;
+      if (expression_check()) {
+        if (fav.t->t.type == _right_parenthesis) {
+          fav.t = fav.t->next;
+          if (fav.t->t.type == _left_curly_bracket) {
+            fav.t = fav.t->next;
+            if (body()) {
+              if (fav.t->t.type == _right_curly_bracket) {
+                fav.t = fav.t->next;
+                return true;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  return false;
+}
+
+bool return_statement() {
+  if (fav.t->t.type == _return) {
+    fav.t = fav.t->next;
+    if (expression_check()) {
+      return true;
+    } else if (fav.t->t.type == _semicolon) {
+      return true;
+    }
+  }
+  return false;
+}
+
+bool var_set() {
+  if (fav.t->t.type == _variable) {
+    fav.t = fav.t->next;
+    if (fav.t->t.type == _equals) {
+      fav.t = fav.t->next;
+      if (expression_check()) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+bool function_call() {
+  if (fav.t->t.type == _identificator) {
+    fav.t = fav.t->next;
+    if (fav.t->t.type == _left_parenthesis) {
+      fav.t = fav.t->next;
+      if (params()) {
+        if (fav.t->t.type == _right_parenthesis) {
+          fav.t = fav.t->next;
+          return true;
+        }
+      }
+    }
+  }
+  return false;
+}
+bool expression_check() {
+  if (fav.t->t.type == _variable || fav.t->t.type == _number ||
+      fav.t->t.type == _string || fav.t->t.type == _int ||
+      fav.t->t.type == _float) {
+    fav.t = fav.t->next;
+    if (fav.t->t.type >= _plus && fav.t->t.type >= _not_typecheck) {
+      fav.t = fav.t->next;
+      if (expression_check()) {
+        return true;
+      }
+    }
+    return true;
+  } else if (fav.t->t.type == _identificator) {
+    if (function_call()) {
+      fav.t = fav.t->next;
+      if (fav.t->t.type == _right_parenthesis || fav.t->t.type == _semicolon) return true;
+      return expression_check();
+    }
+  }
+  return false;
+}
