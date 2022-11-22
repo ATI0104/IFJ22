@@ -10,6 +10,7 @@
 #include "string.h"
 #include "symtable.h"
 
+
 tlist* create_tlist();
 expr* read_expression(tlist* t, int* c);
 expr* add_parenthesis(expr* e);
@@ -21,6 +22,7 @@ tlist* process_exponent(tlist* t);
 void add_func(function_table** tree, tlist* t);
 var_table* load_variables(tlist* t);
 call* load_function_call(tlist* t, function_table* f, var_table* v, int* skip);
+
 bool check_syntax(tlist* t, function_table* f, var_table* v);
 bool prog();
 bool prog2();
@@ -36,4 +38,6 @@ bool return_statement();
 bool var_set();
 bool function_call();
 bool expression_check();
+
+void move_tokens();
 #endif

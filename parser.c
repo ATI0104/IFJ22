@@ -362,7 +362,7 @@ input_param_list* load_input_params(tlist* t, int* skip) {
           tmp->name = *(t->t.str);
         } else {
           eprint("Error: Expected variable name after int\n");
-          exit(4);  // Replace with correct error code
+          syntaxerror(*(t->t.linenum));
         }
         break;
       case _float:;
@@ -373,7 +373,7 @@ input_param_list* load_input_params(tlist* t, int* skip) {
           tmp->name = *(t->t.str);
         } else {
           eprint("Error: Expected variable name after float\n");
-          exit(4);  // Replace with correct error code
+          syntaxerror(*(t->t.linenum));
         }
         break;
       case _string:
@@ -385,7 +385,7 @@ input_param_list* load_input_params(tlist* t, int* skip) {
           tmp->name = *(t->t.str);
         } else {
           eprint("Error: Expected variable name after string\n");
-          exit(4);  // Replace with correct error code
+          syntaxerror(*(t->t.linenum));
         }
         break;
       case _null:
@@ -394,13 +394,13 @@ input_param_list* load_input_params(tlist* t, int* skip) {
         break;
       default:
         eprint("Error: Expected type after comma\n");
-        exit(4);  // Replace with correct error code
+        syntaxerror(*(t->t.linenum));
         break;
     }
     tmp = tmp->next;
     *skip = *skip + 1;
   }
-  if (*skip == 0) {  // Satisfying the compiler
+  if (*skip == 0) {  // no input params
     return NULL;
   }
   return l;
@@ -479,7 +479,7 @@ var_table* load_variables(tlist* t) {
       } else {
         if (var_table_get(&root, *(t->t.str)) != NULL) {
           eprint("Variable %s is not declared\n", t->t.str->txt);
-          exit(4);  // Replace with correct exit code
+          undefined_variable(*(t->t.linenum));
         }
       }
       t = t->next;
@@ -498,14 +498,13 @@ call* load_function_call(tlist* t, function_table* f, var_table* v, int* skip) {
   if (t->t.type == _identificator) {
     function_table* temp = function_table_get(&f, *(t->t.str));
     if (temp == NULL) {
-      eprint("Function %s is not declared\n", t->t.str->txt);
-      exit(4);  // Replace with correct exit code
+      function_undefined(*(t->t.linenum));
     }
     t = t->next;
     *skip = *skip + 1;
     if (t->t.type != _left_parenthesis) {
       eprint("Expected left parenthesis after function name\n");
-      exit(4);  // Replace with correct exit code
+      syntaxerror(*(t->t.linenum));
     }
     t = t->next;
     *skip = *skip + 1;
@@ -541,7 +540,7 @@ call* load_function_call(tlist* t, function_table* f, var_table* v, int* skip) {
           tmp->var = t->t.str;
           if (var_table_get(&v, *(t->t.str)) == NULL) {
             eprint("Variable %s is not declared\n", t->t.str->txt);
-            exit(4);  // Replace with correct exit code
+            undefined_variable(*(t->t.linenum));
           }
           maloc(tmp->next, sizeof(input));
           tmp = tmp->next;
@@ -567,7 +566,10 @@ call* load_function_call(tlist* t, function_table* f, var_table* v, int* skip) {
           break;
         default:
           eprint("Invalid input type\n");
-          exit(4);  // Replace with correct exit code
+          if (t != NULL && t->t.linenum != NULL)
+            syntaxerror(*(t->t.linenum));
+          else
+            syntaxerror(-1);
           break;
       }
     }
@@ -576,7 +578,7 @@ call* load_function_call(tlist* t, function_table* f, var_table* v, int* skip) {
   return NULL;
 }
 
-/*Syntax analysis starts here*/
+/*Syntax analysis starts here*/  // TODO add more error checking
 bool check_syntax(tlist* t, function_table* f, var_table* v) {
   fav.t = t;
   fav.f = f;
@@ -637,6 +639,9 @@ bool function_definition() {
 bool params() {
   while (fav.t->t.type != _right_parenthesis) {
     if (fav.t->t.type == _variable) {
+      if (var_table_get(&fav.v, *(fav.t->t.str)) == NULL) {
+        undefined_variable(*(fav.t->t.linenum));
+      }
       fav.t = fav.t->next;
       if (fav.t->t.type == _comma) {
         fav.t = fav.t->next;
@@ -871,6 +876,9 @@ bool var_set() {
 
 bool function_call() {
   if (fav.t->t.type == _identificator) {
+    if (function_table_get(fav.f, fav.t->t.str) == NULL) {
+      function_undefined(*(fav.t->t.linenum));
+    }
     fav.t = fav.t->next;
     if (fav.t->t.type == _left_parenthesis) {
       fav.t = fav.t->next;
@@ -889,7 +897,7 @@ bool expression_check() {
       fav.t->t.type == _string || fav.t->t.type == _int ||
       fav.t->t.type == _float) {
     fav.t = fav.t->next;
-    if (fav.t->t.type >= _plus && fav.t->t.type >= _not_typecheck) {
+    if (fav.t->t.type >= _plus && fav.t->t.type <= _not_typecheck) {
       fav.t = fav.t->next;
       if (expression_check()) {
         return true;
@@ -899,9 +907,29 @@ bool expression_check() {
   } else if (fav.t->t.type == _identificator) {
     if (function_call()) {
       fav.t = fav.t->next;
-      if (fav.t->t.type == _right_parenthesis || fav.t->t.type == _semicolon) return true;
+      if (fav.t->t.type == _right_parenthesis || fav.t->t.type == _semicolon)
+        return true;
       return expression_check();
     }
   }
   return false;
 }
+
+// Moves tokens which are not part of a function to the end of the token list
+// //TODO
+/*
+void move_tokens() {
+  tlist*prev = NULL;
+  tlist* tmp = fav.t;
+  tlist* res = NULL;
+  while (tmp != NULL) {
+    if (tmp->t.type == _function) {
+      res = tmp;
+      tmp = tmp->next;
+      continue;
+    }
+    tmp = tmp->next;
+  }
+}
+*/
+/*  AST creation after both the syntax and the semantics are correct*/
