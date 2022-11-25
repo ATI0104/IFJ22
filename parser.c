@@ -346,7 +346,7 @@ input_param_list* load_input_params(tlist* t, int* skip) {
   *skip = 0;
   input_param_list* l;
   maloc(l, sizeof(input_param_list));
-  input_param_list* tmp;
+  input_param_list* tmp = l;
   while (t->t.type != _right_parenthesis) {
     if (t->t.type == _comma) {
       t = t->next;
@@ -397,10 +397,14 @@ input_param_list* load_input_params(tlist* t, int* skip) {
         syntaxerror(*(t->t.linenum));
         break;
     }
-    tmp = tmp->next;
+    if (t->t.type != _right_parenthesis) {
+      maloc(tmp->next, sizeof(input_param_list));
+      tmp = tmp->next;
+    }
     *skip = *skip + 1;
   }
   if (*skip == 0) {  // no input params
+    free(l);
     return NULL;
   }
   return l;
@@ -445,10 +449,13 @@ void add_func(function_table** tree, tlist* t) {
             } else {
               tmp->output_type = _null;
             }
+            function_table_add(tree, tmp);
           }
+          elsefree(tmp);
         }
+        elsefree(tmp);
       }
-      function_table_add(tree, tmp);
+      elsefree(tmp);
     }
     t = t->next;
   }
@@ -495,8 +502,9 @@ call* load_function_call(tlist* t, function_table* f, var_table* v, int* skip) {
     return NULL;
   }
   *skip = 0;
+  function_table* temp;
   if (t->t.type == _identificator) {
-    function_table* temp = function_table_get(&f, *(t->t.str));
+    temp = function_table_get(&f, *(t->t.str));
     if (temp == NULL) {
       function_undefined(*(t->t.linenum));
     }
@@ -513,6 +521,11 @@ call* load_function_call(tlist* t, function_table* f, var_table* v, int* skip) {
     input* i;
     maloc(i, sizeof(input));
     input* tmp = i;
+    if (t->t.type == _right_parenthesis) {
+      free(tmp);
+      c->function_name = &(temp->name);
+      return NULL;
+    }
     while (t->t.type != _right_parenthesis) {
       if (t->t.type == _comma) {
         t = t->next;

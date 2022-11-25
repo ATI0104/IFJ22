@@ -102,4 +102,5 @@
       eprint("Semantic error\n");               \
     exit(Semantic_Error);                       \
   } while (0)
+#define elsefree(pointer) else{if(pointer)free(pointer);}
 #endif
