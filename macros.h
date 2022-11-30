@@ -12,7 +12,7 @@
 #define Internal_Error 99
 #define maloc(pointer, size)    \
   do {                          \
-    pointer = malloc(size);     \
+    pointer = calloc(size,1);     \
     if (pointer == NULL) {      \
       eprint("Malloc Error\n"); \
       exit(Internal_Error);     \

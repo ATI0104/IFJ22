@@ -2,7 +2,7 @@
 
 void function_table_init(function_table **tree) {
   *tree = NULL;
- /*Built-in functions*/
+  /*Built-in functions*/
 
   // reads()
   function_table *reads_ft;
@@ -62,33 +62,38 @@ void function_table_init(function_table **tree) {
   maloc(strval_ft, sizeof(function_table));
   // input can be string/null
   strval_ft->input_type = NULL;
-  string_set(&(*intval_ft).name, "strval");
-  strval_ft->output_type = _string; 
+  string_set(&(*strval_ft).name, "strval");
+  strval_ft->output_type = _string;
   function_table_add(&(*tree), strval_ft);
 
   // strlen()
   function_table *strlen_ft;
   input_param_list *params = NULL;
   maloc(strlen_ft, sizeof(function_table));
-  string s;
-  string_set(&s, "s");
-  params = insert_top(s, _string, params);
-  string_set(&(*strlen_ft).name, "strlen");
+  string *s;
+  maloc(s, sizeof(string));
+  string_set(s, "s");
+  params = insert_top(*s, _string, params);
+  string_set(&(strlen_ft->name), "strlen");
   strlen_ft->input_type = params;
   strlen_ft->output_type = _int;  //_int
-  function_table_add(&(*tree), strlen_ft);
+  function_table_add(tree, strlen_ft);
 
   // substring(string s, int id, int id2)
   function_table *substring_ft;
   maloc(substring_ft, sizeof(function_table));
   input_param_list *param_substr = NULL;
-  string_set(&s, "s");
-  param_substr = insert_top(s, _string, param_substr);
-  string_set(&s, "i");
-  param_substr = insert_top(s, _int, param_substr);
-  string_set(&s, "j");
-  param_substr = insert_top(s, _int, param_substr);
+  maloc(s, sizeof(string));
+  string_set(s, "s");
+  param_substr = insert_top(*s, _string, param_substr);
+  maloc(s, sizeof(string));
+  string_set(s, "i");
+  param_substr = insert_top(*s, _int, param_substr);
+  maloc(s, sizeof(string));
+  string_set(s, "j");
+  param_substr = insert_top(*s, _int, param_substr);
   substring_ft->input_type = param_substr;
+  maloc(s, sizeof(string));
   string_set(&(*substring_ft).name, "substring");
   substring_ft->output_type = _string;
   function_table_add(&(*tree), substring_ft);
@@ -97,9 +102,11 @@ void function_table_init(function_table **tree) {
   function_table *ord_ft;
   maloc(ord_ft, sizeof(function_table));
   input_param_list *param_ord = NULL;
-  string_set(&s, "c");
-  param_ord = insert_top(s, _string, param_ord);
+  maloc(s, sizeof(string));
+  string_set(s, "c");
+  param_ord = insert_top(*s, _string, param_ord);
   ord_ft->input_type = param_ord;
+  maloc(s, sizeof(string));
   string_set(&(*ord_ft).name, "ord");
   ord_ft->output_type = _int;
   function_table_add(&(*tree), ord_ft);
@@ -108,9 +115,11 @@ void function_table_init(function_table **tree) {
   function_table *chr_ft;
   maloc(chr_ft, sizeof(function_table));
   input_param_list *param_chr = NULL;
-  string_set(&s, "i");
-  param_chr = insert_top(s, _int, param_chr);
+  maloc(s, sizeof(string));
+  string_set(s, "i");
+  param_chr = insert_top(*s, _int, param_chr);
   chr_ft->input_type = param_chr;
+  maloc(s, sizeof(string));
   string_set(&(*chr_ft).name, "chr");
   chr_ft->output_type = _string;
   function_table_add(tree, chr_ft);
@@ -177,7 +186,8 @@ void function_table_delete(function_table **tree, string name) {
   }
 }
 
-void func_table_replace_by_rightmost(function_table *target, function_table **tree) {
+void func_table_replace_by_rightmost(function_table *target,
+                                     function_table **tree) {
   if ((*tree)->right_func == NULL) {
     target->name = (*tree)->name;
     target->input_type = (*tree)->input_type;
@@ -211,7 +221,7 @@ var_table *var_table_get(var_table **tree, string name) {
   if (strcmp((*tree)->name.txt, name.txt) > 0) {
     return var_table_get(&(*tree)->right_var, name);
   } else
-    return var_table_get(&(*tree)->right_var, name);
+    return var_table_get(&(*tree)->left_var, name);
 }
 
 void var_table_destroy(var_table **tree) {
@@ -244,7 +254,7 @@ void var_table_delete(var_table **tree, string name) {
         if ((*tree)->left_var == NULL) {
           var_table *tmp = *tree;
           *tree = (*tree)->right_var;
-          
+
           free(tmp);
         }
         if ((*tree)->right_var == NULL) {
@@ -264,20 +274,23 @@ void var_table_replace_by_rightmost(var_table *target, var_table **tree) {
     target->num = (*tree)->num;
     target->fl = (*tree)->fl;
     target->s = (*tree)->s;
-    
+
     var_table_delete(tree, target->name);
   } else
     var_table_replace_by_rightmost(target, &(*tree)->right_var);
 }
-void add_predef_funs(function_table **tree){
- if(tree == NULL) return; 
-}
-
 input_param_list *insert_top(string name, int type, input_param_list *current) {
   input_param_list *new_list;
   maloc(new_list, sizeof(input_param_list));
   new_list->name = name;
   new_list->type = type;
-  new_list->next = current;
-  return new_list;
+  new_list->next = NULL;
+  if (current == NULL) {
+    return new_list;
+  }
+  while (current->next != NULL) {
+    current = current->next;
+  }
+  current->next = new_list;
+  return current;
 }

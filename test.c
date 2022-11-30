@@ -7,6 +7,13 @@ int main() {
   tlist* m = create_tlist();
   string a;
   string_init(&a);
+  function_table* f = NULL;
+  function_table_init(&f);
+  add_func(&f, m);
+  if (check_syntax(m, f))
+    eprint("Works!");
+  else
+    syntaxerror(-1);
 #ifdef _skip_prolog_check
   expr* e;
   int c = 0;
@@ -17,16 +24,15 @@ int main() {
   expr_print(e, true);
 #endif
   // Prints out basic informations about the generated tokens
-  token tok;
+ /* token tok;
   while (m != NULL) {
     tok = m->t;
     printf("Token from line %d\n has a type of %d.\n", *(tok.linenum),
            tok.type);
     if (tok.i_val != NULL) {
-
       printf("It's int value = %d\n", *tok.i_val);
     }
-        if (tok.f_val != NULL) {
+    if (tok.f_val != NULL) {
       printf("It's float value = %f\n", *tok.f_val);
     }
     if (tok.str != NULL) {
@@ -34,7 +40,7 @@ int main() {
     }
     m = m->next;
   }
-
+*/
   return 0;
 }
 

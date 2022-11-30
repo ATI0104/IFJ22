@@ -360,6 +360,8 @@ input_param_list* load_input_params(tlist* t, int* skip) {
         *skip = *skip + 1;
         if (t->t.type == _variable) {
           tmp->name = *(t->t.str);
+          *skip = *skip + 1;
+          t = t->next;
         } else {
           eprint("Error: Expected variable name after int\n");
           syntaxerror(*(t->t.linenum));
@@ -427,31 +429,31 @@ void add_func(function_table** tree, tlist* t) {
             t = t->next;
             skip--;
           }
-          if (t->t.type == _right_parenthesis) {
+          if (t->t.type == _colon) {
             t = t->next;
-            if (t->t.type == _colon) {
+            if (t->t.type == _question_mark)
+              t = t->next;  // Should we deal
+                            // with this?
+            if (t->t.type == _int) {
+              tmp->output_type = _int;
               t = t->next;
-              if (t->t.type == _question_mark)
-                t = t->next;  // Should we deal
-                              // with this?
-              if (t->t.type == _int) {
-                tmp->output_type = _int;
-              }
-              if (t->t.type == _float) {
-                tmp->output_type = _float;
-              }
-              if (t->t.type == _string) {
-                tmp->output_type = _string;
-              }
-              if (t->t.type == _null) {
-                tmp->output_type = _null;
-              }
-            } else {
+            }
+            if (t->t.type == _float) {
+              tmp->output_type = _float;
+              t = t->next;
+            }
+            if (t->t.type == _string) {
+              tmp->output_type = _string;
+              t = t->next;
+            }
+            if (t->t.type == _null) {
               tmp->output_type = _null;
             }
-            function_table_add(tree, tmp);
+          } else {
+            tmp->output_type = _null;
           }
-          elsefree(tmp);
+          tmp->variable = load_variables(t, tmp->input_type);
+          function_table_add(tree, tmp);
         }
         elsefree(tmp);
       }
@@ -460,7 +462,7 @@ void add_func(function_table** tree, tlist* t) {
     t = t->next;
   }
 }
-var_table* load_variables(tlist* t) {
+var_table* load_variables(tlist* t, input_param_list* input) {
   if (t == NULL) {
     return NULL;
   }
@@ -478,124 +480,41 @@ var_table* load_variables(tlist* t) {
     } else if (t->t.type == _right_curly_bracket) {
       count--;
     } else if (t->t.type == _variable) {
+      string* varname = t->t.str;
       tlist* temp = t->next;
       if (temp->t.type == _equals) {
-        maloc(leaf, sizeof(var_table));
-        leaf->name = *(t->t.str);
-        var_table_add(&root, leaf);
+        if (var_table_get(&root, *varname) == NULL) {
+          maloc(leaf, sizeof(var_table));
+          leaf->name = *(t->t.str);
+          var_table_add(&root, leaf);
+        }
       } else {
-        if (var_table_get(&root, *(t->t.str)) != NULL) {
-          eprint("Variable %s is not declared\n", t->t.str->txt);
-          undefined_variable(*(t->t.linenum));
+        if (var_table_get(&root, *(t->t.str)) == NULL) {
+          input_param_list* input_parameters = input;
+          bool notfound = true;
+          while (input_parameters != NULL) {
+            if (strcmp(input_parameters->name.txt, t->t.str->txt) == 0) {
+              notfound = false;
+              break;
+            }
+            input_parameters = input_parameters->next;
+          }
+          if (notfound) {
+            eprint("Variable %s is not declared\n", t->t.str->txt);
+            undefined_variable(*(t->t.linenum));
+          }
         }
       }
-      t = t->next;
     }
+    t = t->next;
   }
   return root;
 }
 
-// Returns the called function, the first item in tlist should be the function's
-// name
-call* load_function_call(tlist* t, function_table* f, var_table* v, int* skip) {
-  if (t == NULL || skip == NULL) {
-    return NULL;
-  }
-  *skip = 0;
-  function_table* temp;
-  if (t->t.type == _identificator) {
-    temp = function_table_get(&f, *(t->t.str));
-    if (temp == NULL) {
-      function_undefined(*(t->t.linenum));
-    }
-    t = t->next;
-    *skip = *skip + 1;
-    if (t->t.type != _left_parenthesis) {
-      eprint("Expected left parenthesis after function name\n");
-      syntaxerror(*(t->t.linenum));
-    }
-    t = t->next;
-    *skip = *skip + 1;
-    call* c;
-    maloc(c, sizeof(call));
-    input* i;
-    maloc(i, sizeof(input));
-    input* tmp = i;
-    if (t->t.type == _right_parenthesis) {
-      free(tmp);
-      c->function_name = &(temp->name);
-      return NULL;
-    }
-    while (t->t.type != _right_parenthesis) {
-      if (t->t.type == _comma) {
-        t = t->next;
-        *skip = *skip + 1;
-        continue;
-      }
-      switch (t->t.type) {
-        case _number:
-          tmp->i = t->t.i_val;
-          maloc(tmp->next, sizeof(input));
-          tmp = tmp->next;
-          t = t->next;
-          *skip = *skip + 1;
-          continue;
-          break;
-        case _decimalnumber:
-          tmp->f = t->t.f_val;
-          maloc(tmp->next, sizeof(input));
-          tmp = tmp->next;
-          t = t->next;
-          *skip = *skip + 1;
-          continue;
-          break;
-        case _variable:
-          tmp->var = t->t.str;
-          if (var_table_get(&v, *(t->t.str)) == NULL) {
-            eprint("Variable %s is not declared\n", t->t.str->txt);
-            undefined_variable(*(t->t.linenum));
-          }
-          maloc(tmp->next, sizeof(input));
-          tmp = tmp->next;
-          t = t->next;
-          *skip = *skip + 1;
-          continue;
-          break;
-        case _string:
-          tmp->s = t->t.str;
-          maloc(tmp->next, sizeof(input));
-          tmp = tmp->next;
-          t = t->next;
-          *skip = *skip + 1;
-          continue;
-          break;
-        case _null:
-          tmp->null = true;
-          maloc(tmp->next, sizeof(input));
-          tmp = tmp->next;
-          t = t->next;
-          *skip = *skip + 1;
-          continue;
-          break;
-        default:
-          eprint("Invalid input type\n");
-          if (t != NULL && t->t.linenum != NULL)
-            syntaxerror(*(t->t.linenum));
-          else
-            syntaxerror(-1);
-          break;
-      }
-    }
-    return c;
-  }
-  return NULL;
-}
-
 /*Syntax analysis starts here*/  // TODO add more error checking
-bool check_syntax(tlist* t, function_table* f, var_table* v) {
+bool check_syntax(tlist* t, function_table* f) {
   fav.t = t;
   fav.f = f;
-  fav.v = v;
   return prog();
 }
 bool prog() {
@@ -624,7 +543,7 @@ bool function_definition() {
       fav.t = fav.t->next;
       if (fav.t->t.type == _left_parenthesis) {
         fav.t = fav.t->next;
-        if (params()) {
+        if (def_params()) {
           if (fav.t->t.type == _right_parenthesis) {
             fav.t = fav.t->next;
             if (fav.t->t.type == _colon) {
@@ -652,9 +571,6 @@ bool function_definition() {
 bool params() {
   while (fav.t->t.type != _right_parenthesis) {
     if (fav.t->t.type == _variable) {
-      if (var_table_get(&fav.v, *(fav.t->t.str)) == NULL) {
-        undefined_variable(*(fav.t->t.linenum));
-      }
       fav.t = fav.t->next;
       if (fav.t->t.type == _comma) {
         fav.t = fav.t->next;
@@ -672,7 +588,7 @@ bool params() {
         fav.t = fav.t->next;
         continue;
       }
-    } else if (fav.t->t.type == _string) {
+    } else if (fav.t->t.type == _array) {
       fav.t = fav.t->next;
       if (fav.t->t.type == _comma) {
         fav.t = fav.t->next;
@@ -684,8 +600,10 @@ bool params() {
         fav.t = fav.t->next;
         continue;
       }
-    }
-    return false;
+    } else if (fav.t->t.type == _right_parenthesis) {
+      return true;
+    } else
+      return false;
   }
   if (fav.t->t.type == _right_parenthesis) {
     return true;
@@ -693,37 +611,48 @@ bool params() {
   return false;
 }
 bool def_params() {
-  while (fav.t->t.type != _right_parenthesis) {
+  while (true) {
     if (type()) {
       if (fav.t->t.type == _variable) {
         fav.t = fav.t->next;
         if (fav.t->t.type == _comma) {
           fav.t = fav.t->next;
           continue;
+        } else if (fav.t->t.type == _right_parenthesis) {
+          return true;
         }
+
       } else if (fav.t->t.type == _number) {
         fav.t = fav.t->next;
         if (fav.t->t.type == _comma) {
           fav.t = fav.t->next;
           continue;
+        } else if (fav.t->t.type == _right_parenthesis) {
+          return true;
         }
       } else if (fav.t->t.type == _decimalnumber) {
         fav.t = fav.t->next;
         if (fav.t->t.type == _comma) {
           fav.t = fav.t->next;
           continue;
+        } else if (fav.t->t.type == _right_parenthesis) {
+          return true;
         }
       } else if (fav.t->t.type == _string) {
         fav.t = fav.t->next;
         if (fav.t->t.type == _comma) {
           fav.t = fav.t->next;
           continue;
+        } else if (fav.t->t.type == _right_parenthesis) {
+          return true;
         }
       } else if (fav.t->t.type == _null) {
         fav.t = fav.t->next;
         if (fav.t->t.type == _comma) {
           fav.t = fav.t->next;
           continue;
+        } else if (fav.t->t.type == _right_parenthesis) {
+          return true;
         }
       }
     }
@@ -733,6 +662,7 @@ bool def_params() {
     return true;
   }
   return false;
+  printf("Deadcode\n");
 }
 bool type() {
   if (fav.t->t.type == _question_mark) {
@@ -789,6 +719,9 @@ bool body() {
       break;
     case _right_curly_bracket:
       return true;
+      break;
+    case _semicolon:
+      syntaxerror(*(fav.t->t.linenum));
       break;
     default:
       return false;
@@ -889,7 +822,7 @@ bool var_set() {
 
 bool function_call() {
   if (fav.t->t.type == _identificator) {
-    if (function_table_get(&fav.f, *(fav.t->t.str)) == NULL) {
+    if (function_table_get(&(fav.f), *(fav.t->t.str)) == NULL) {
       function_undefined(*(fav.t->t.linenum));
     }
     fav.t = fav.t->next;
@@ -908,7 +841,8 @@ bool function_call() {
 bool expression_check() {
   if (fav.t->t.type == _variable || fav.t->t.type == _number ||
       fav.t->t.type == _string || fav.t->t.type == _int ||
-      fav.t->t.type == _float) {
+      fav.t->t.type == _float || fav.t->t.type == _null ||
+      fav.t->t.type == _array || fav.t->t.type == _decimalnumber) {
     fav.t = fav.t->next;
     if (fav.t->t.type >= _plus && fav.t->t.type <= _not_typecheck) {
       fav.t = fav.t->next;
@@ -916,10 +850,12 @@ bool expression_check() {
         return true;
       }
     }
-    return true;
+    if (fav.t->t.type == _right_parenthesis || fav.t->t.type == _semicolon) {
+      return true;
+    }
+
   } else if (fav.t->t.type == _identificator) {
     if (function_call()) {
-      fav.t = fav.t->next;
       if (fav.t->t.type == _right_parenthesis || fav.t->t.type == _semicolon)
         return true;
       return expression_check();
@@ -930,19 +866,251 @@ bool expression_check() {
 
 // Moves tokens which are not part of a function to the end of the token list
 // //TODO
-/*
-void move_tokens() {
-  tlist*prev = NULL;
-  tlist* tmp = fav.t;
-  tlist* res = NULL;
-  while (tmp != NULL) {
-    if (tmp->t.type == _function) {
-      res = tmp;
-      tmp = tmp->next;
-      continue;
+
+tlist* move_tokens(tlist* t) {
+  tlist* functions = NULL;
+  tlist* code = NULL;  // Code not in any function ("pseudo main function")
+  while (t->next != NULL) {
+    if (t->t.type == _prolog) {
+      functions = tlist_add(functions, t->t);
+      t = t->next;
+    } else if (t->t.type == _function) {
+      int skip = function_skip(t);
+      while (skip) {
+        functions = tlist_add(functions, t->t);
+        t = t->next;
+      }
+    } else {
+      code = tlist_add(code, t->t);
+      t = t->next;
     }
-    tmp = tmp->next;
+  }
+  while (code->next != NULL) {
+    functions = tlist_add(functions, code->t);
+    code = code->next;
+  }
+  return functions;
+}
+
+// Skips the function definition
+// Returns the number of tokens for skipping the function
+// Should be called when the _function token is the current
+int function_skip(tlist* tokens) {
+  int brackets = 0;
+  if (tokens->t.type != _function) {
+    return -1;
+  }
+  // Used to skip the input parameters and the return type(already defined in
+  // the symbol table and verified)
+  bool firstbracketfound = false;
+  int skip = 0;
+  while (true) {
+    if (tokens->t.type == _left_curly_bracket) {
+      brackets++;
+      firstbracketfound = true;
+    }
+    if (firstbracketfound) {
+      if (tokens->t.type == _right_curly_bracket) {
+        brackets--;
+        if (brackets == 0) {
+          return skip;
+        }
+      }
+    }
+    if (tokens->t.type == _EOF) {
+      syntaxerror(*tokens->t.linenum);
+    }
+    skip++;
+    tokens = tokens->next;
   }
 }
-*/
-/*  AST creation after both the syntax and the semantics are correct*/
+
+tlist* tlist_add(tlist* t, token tok) {
+  tlist* tmp = t;
+  if (tmp == NULL) {
+    maloc(tmp, sizeof(tlist));
+    tmp->t = tok;
+    return tmp;
+  }
+  tlist* tmp2 = tmp;
+  while (tmp2->next != NULL) {
+    tmp2 = tmp2->next;
+  }
+  maloc(tmp2->next, sizeof(tlist));
+  tmp2->next->t = tok;
+  return tmp;
+}
+
+/* AST creation including semantics analysis
+ * Should be called after the code found
+ * outside of functions is moved to the bottom of the token list)*/
+AST* ConvertToAst(tlist* functions, tlist* mainfunction) {
+  AST* tmp;
+  AST_init(&tmp);
+  while (functions != NULL) {
+    switch (functions->t.type) {
+      case _prolog:
+        continue;
+        break;
+      case _function:
+        functions = functions->next;
+        string* fname = functions->t.str;
+        while (functions->t.type !=
+               _left_curly_bracket) {  // skipping input and output
+                                       // parameters(already in symbol table)
+          functions = functions->next;
+        }
+        AST_add(&tmp, fname, ConvertToCode(functions));
+        break;
+      default:
+        eprint("Debug Message: parser.c[934] Error");
+        break;
+    }
+    functions = functions->next;
+  }
+  string main;
+  string_init(&main);
+  string_set(&main, "m@in");
+  AST_add(&tmp, &main, ConvertToCode(mainfunction));
+  return tmp;
+}
+
+code* ConvertToCode(tlist* t) {
+  code* tmp;
+  code_init(&tmp);
+  if (t->t.type == _left_curly_bracket) {
+    t = t->next;
+  } else {
+    eprint("Debug Message: parser.c[949] Error");
+    return NULL;
+  }
+  int brackets = 1;
+  while (brackets) {
+    switch (t->t.type) {
+      case _if:
+        t = t->next;
+        int skip = 1;
+        // expr* ifexpr = read_expression(t, &skip);
+        while (skip) {
+          t = t->next;
+        }
+        if (t->t.type == _left_curly_bracket) {
+          //  code* varif = ConvertToCode(t);
+        } else {
+          eprint("Debug Message: parser.c[966] Error");
+        }
+        break;
+      case _identificator:
+
+        break;
+      case _variable:
+
+        break;
+      case _while:
+
+        break;
+      case _return:
+
+        break;
+      default:
+        break;
+    }
+  }
+  return NULL;
+}
+// Returns the called function, the first item in tlist should be the function's
+// name
+
+call* load_function_call(tlist* t, function_table* f, var_table* v, int* skip) {
+  if (t == NULL || skip == NULL) {
+    return NULL;
+  }
+  *skip = 0;
+  function_table* temp;
+  if (t->t.type == _identificator) {
+    temp = function_table_get(&f, *(t->t.str));
+    if (temp == NULL) {
+      function_undefined(*(t->t.linenum));
+    }
+    t = t->next;
+    *skip = *skip + 1;
+    if (t->t.type != _left_parenthesis) {
+      eprint("Expected left parenthesis after function name\n");
+      syntaxerror(*(t->t.linenum));
+    }
+    t = t->next;
+    *skip = *skip + 1;
+    call* c;
+    maloc(c, sizeof(call));
+    input* i;
+    maloc(i, sizeof(input));
+    input* tmp = i;
+    if (t->t.type == _right_parenthesis) {
+      free(tmp);
+      c->function_name = &(temp->name);
+      return NULL;
+    }
+    while (t->t.type != _right_parenthesis) {
+      if (t->t.type == _comma) {
+        t = t->next;
+        *skip = *skip + 1;
+        continue;
+      }
+      switch (t->t.type) {
+        case _number:
+          tmp->i = t->t.i_val;
+          maloc(tmp->next, sizeof(input));
+          tmp = tmp->next;
+          t = t->next;
+          *skip = *skip + 1;
+          continue;
+          break;
+        case _decimalnumber:
+          tmp->f = t->t.f_val;
+          maloc(tmp->next, sizeof(input));
+          tmp = tmp->next;
+          t = t->next;
+          *skip = *skip + 1;
+          continue;
+          break;
+        case _variable:
+          tmp->var = t->t.str;
+          if (var_table_get(&v, *(t->t.str)) == NULL) {
+            eprint("Variable %s is not declared\n", t->t.str->txt);
+            undefined_variable(*(t->t.linenum));
+          }
+          maloc(tmp->next, sizeof(input));
+          tmp = tmp->next;
+          t = t->next;
+          *skip = *skip + 1;
+          continue;
+          break;
+        case _string:
+          tmp->s = t->t.str;
+          maloc(tmp->next, sizeof(input));
+          tmp = tmp->next;
+          t = t->next;
+          *skip = *skip + 1;
+          continue;
+          break;
+        case _null:
+          tmp->null = true;
+          maloc(tmp->next, sizeof(input));
+          tmp = tmp->next;
+          t = t->next;
+          *skip = *skip + 1;
+          continue;
+          break;
+        default:
+          eprint("Invalid input type\n");
+          if (t != NULL && t->t.linenum != NULL)
+            syntaxerror(*(t->t.linenum));
+          else
+            syntaxerror(-1);
+          break;
+      }
+    }
+    return c;
+  }
+  return NULL;
+}
