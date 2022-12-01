@@ -23,13 +23,14 @@ typedef struct call {
   output* out;            // Not used
 } call;
 typedef struct expr {
-  int type;     // Estimated data type of the result
-  string* str;  // constant string
-  int* num;     // constant positive integer
-  double* fl;   // constant floating point number or negative integer
-  int* op;      // operator (+, -, *, /, <, >, <=, >=, ===, !==,...)
-  string* var;  // variable
-  call* func;   // function call
+  int type;           // Estimated data type of the result
+  string* str;        // constant string
+  int* num;           // constant positive integer
+  double* fl;         // constant floating point number or negative integer
+  int* op;            // operator (+, -, *, /, <, >, <=, >=, ===, !==,...)
+  string* var;        // variable
+  call* func;         // function call
+  int* typekeywords;  // type keywords (int,float,string,null)
   struct expr* next;
   struct expr* first;
 } expr;
@@ -71,7 +72,7 @@ void code_add(code** c, int lnum, code* i, code* e, code* loop, expr* exp,
 void code_destroy(code** c);
 void expr_init(expr** e);
 void expr_add(expr** e, int type, string* str, int* num, double* fl, int* op,
-              string* var, call* func);
+              string* var, call* func, int* keywords);
 void expr_destroy(expr** e, bool rec);
 expr* expr_pop(expr** e);
 void expr_topostfix(expr** e);

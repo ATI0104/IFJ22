@@ -46,7 +46,8 @@ void expr_topostfix(expr** e) {
     a = expr_pop(e);
     if (a == NULL) break;
     if (a->op == NULL) {
-      expr_add(&tmp, a->type, a->str, a->num, a->fl, a->op, a->var, a->func);
+      expr_add(&tmp, a->type, a->str, a->num, a->fl, a->op, a->var, a->func,
+               a->typekeywords);
       free(a);
       continue;
     }
@@ -65,11 +66,11 @@ void expr_topostfix(expr** e) {
         }
         maloc(j, sizeof(int));
         *j = top;
-        expr_add(&tmp, 0, NULL, NULL, NULL, j, NULL, NULL);
+        expr_add(&tmp, 0, NULL, NULL, NULL, j, NULL, NULL, NULL);
       }
       if (top != _left_parenthesis) {
-        eprint("Invalid Expression\n");
-        exit(LEXICAL_ERROR);  // replace with the right exit code
+        *e = NULL;
+        return;  // replace with the right exit code
       }
     } else if (a->op[0] == _equals) {
       while (!Stack_IsEmpty(op_stack)) {
@@ -78,7 +79,7 @@ void expr_topostfix(expr** e) {
         Stack_Pop(op_stack);
         maloc(j, sizeof(int));
         *j = k;
-        expr_add(&tmp, 0, NULL, NULL, NULL, j, NULL, NULL);
+        expr_add(&tmp, 0, NULL, NULL, NULL, j, NULL, NULL, NULL);
       }
       break;
     } else {
@@ -87,7 +88,7 @@ void expr_topostfix(expr** e) {
              check_precedence(a->op) <= check_precedence(&top)) {
         maloc(j, sizeof(int));
         *j = top;
-        expr_add(&tmp, 0, NULL, NULL, NULL, j, NULL, NULL);
+        expr_add(&tmp, 0, NULL, NULL, NULL, j, NULL, NULL, NULL);
         Stack_Pop(op_stack);
         Stack_Top(op_stack, &top);
       }
@@ -100,7 +101,7 @@ void expr_topostfix(expr** e) {
     Stack_Pop(op_stack);
     maloc(j, sizeof(int));
     *j = k;
-    expr_add(&tmp, 0, NULL, NULL, NULL, j, NULL, NULL);
+    expr_add(&tmp, 0, NULL, NULL, NULL, j, NULL, NULL, NULL);
   }
   a = *e;
   *e = tmp;
@@ -127,12 +128,11 @@ tlist* create_tlist() {
   return create_floats(t);
 }
 
-expr* read_expression(tlist* t, int* c) {
+expr* read_expression(tlist* t, int* c, int brackets) {
   if (t == NULL || c == NULL) return NULL;
   *c = 0;
   expr* tmp;
   expr_init(&tmp);
-  int brackets = 0;
   while (t != NULL) {
     if (t == NULL) {
       eprint("Incorrect expression\n");
@@ -140,20 +140,20 @@ expr* read_expression(tlist* t, int* c) {
     }
     if ((t->t.type >= _plus && t->t.type <= _not_typecheck) ||
         t->t.type == _dot) {
-      expr_add(&tmp, 0, NULL, NULL, NULL, &(t->t.type), NULL, NULL);
+      expr_add(&tmp, 0, NULL, NULL, NULL, &(t->t.type), NULL, NULL, NULL);
       t = t->next;
       (*c)++;
       continue;
     }
     if (t->t.type == _left_parenthesis) {
-      expr_add(&tmp, 0, NULL, NULL, NULL, &(t->t.type), NULL, NULL);
+      expr_add(&tmp, 0, NULL, NULL, NULL, &(t->t.type), NULL, NULL, NULL);
       t = t->next;
       (*c)++;
       brackets++;
       continue;
     }
     if (t->t.type == _right_parenthesis) {
-      expr_add(&tmp, 0, NULL, NULL, NULL, &(t->t.type), NULL, NULL);
+      expr_add(&tmp, 0, NULL, NULL, NULL, &(t->t.type), NULL, NULL, NULL);
       brackets--;
       t = t->next;
       (*c)++;
@@ -163,34 +163,33 @@ expr* read_expression(tlist* t, int* c) {
       if (brackets == 0) {
         return tmp;
       }
-      eprint("Syntax error\n");
-      exit(4);  // Add correct exit code
+      return NULL;
     }
     switch (t->t.type) {
       case _number:
-        expr_add(&tmp, 0, NULL, t->t.i_val, NULL, NULL, NULL, NULL);
+        expr_add(&tmp, 0, NULL, t->t.i_val, NULL, NULL, NULL, NULL, NULL);
         t = t->next;
         (*c)++;
         break;
       case _decimalnumber:
-        expr_add(&tmp, 0, NULL, NULL, t->t.f_val, NULL, NULL, NULL);
+        expr_add(&tmp, 0, NULL, NULL, t->t.f_val, NULL, NULL, NULL, NULL);
         t = t->next;
         (*c)++;
         break;
       case _variable:
-        expr_add(&tmp, 0, NULL, NULL, NULL, NULL, t->t.str, NULL);
+        expr_add(&tmp, 0, NULL, NULL, NULL, NULL, t->t.str, NULL, NULL);
         t = t->next;
         (*c)++;
         break;
       case _array:
-        expr_add(&tmp, 0, t->t.str, NULL, NULL, NULL, NULL, NULL);
+        expr_add(&tmp, 0, t->t.str, NULL, NULL, NULL, NULL, NULL, NULL);
         t = t->next;
         (*c)++;
         break;
       case _identificator:;
         int p;
-        call* cal = load_function_call(t, fav.f, fav.v, &p);
-        expr_add(&tmp, 0, NULL, NULL, NULL, NULL, NULL, cal);
+        call* cal = load_function_call(t, fav.f, &p);
+        expr_add(&tmp, 0, NULL, NULL, NULL, NULL, NULL, cal, NULL);
         while (p != 0) {
           t = t->next;
           (*c)++;
@@ -199,9 +198,19 @@ expr* read_expression(tlist* t, int* c) {
         t = t->next;
         (*c)++;
         break;
+      case _int:
+      case _float:
+      case _string:
+      case _null:;
+        int* type;
+        maloc(type, sizeof(int));
+        *type = t->t.type;
+        expr_add(&tmp, 0, NULL, NULL, NULL, NULL, NULL, NULL, type);
+        t = t->next;
+        (*c)++;
+        break;
       default:
-        eprint("Incorrect expression\n");
-        exit(4);  // Add correct exit code
+        return false;
         break;
     }
   }
@@ -214,11 +223,11 @@ expr* add_parenthesis(expr* e) {
   int* lpar;
   maloc(lpar, sizeof(int));
   *lpar = _left_parenthesis;
-  expr_add(&tmp, 0, NULL, NULL, NULL, lpar, NULL, NULL);
+  expr_add(&tmp, 0, NULL, NULL, NULL, lpar, NULL, NULL, NULL);
   tmp->next = e;
   maloc(lpar, sizeof(int));
   *lpar = _right_parenthesis;
-  expr_add(&tmp, 0, NULL, NULL, NULL, lpar, NULL, NULL);
+  expr_add(&tmp, 0, NULL, NULL, NULL, lpar, NULL, NULL, NULL);
   return tmp;
 }
 tlist* create_floats(tlist* t) {
@@ -247,11 +256,10 @@ tlist* create_floats(tlist* t) {
         string_destroy(t_3->t.str);
         free(t_2);
         free(t_3);
-      } else if ((t_1->t.type == _string || t_1->t.type == _variable) &&
-                 (t_3->t.type == _string || t_3->t.type == _variable))
-        ;
-      else
-        exit(1);
+      } else if (t_3 != NULL && t_3->t.type == _semicolon) {
+        eprint("Lexical error\n");
+        exit(LEXICAL_ERROR);
+      }
     } else if (t_1->t.type == _number) {
       maloc(t_1->t.i_val, sizeof(int));
       *(t_1->t.i_val) = atoi(t_1->t.str->txt);
@@ -321,6 +329,10 @@ tlist* process_exponent(tlist* t) {
           t_1->t.type = _decimalnumber;
         }
       } else if (t_1->t.type == _decimalnumber) {
+        if (t_3->t.type == _plus) {
+          t_3 = t_3->next;
+          if (t_3 != NULL && t_3->t.type != _number) break;
+        }
         if (t_3->t.type == _number) {
           double* tmp;
           maloc(tmp, sizeof(double));
@@ -373,6 +385,8 @@ input_param_list* load_input_params(tlist* t, int* skip) {
         *skip = *skip + 1;
         if (t->t.type == _variable) {
           tmp->name = *(t->t.str);
+          *skip = *skip + 1;
+          t = t->next;
         } else {
           eprint("Error: Expected variable name after float\n");
           syntaxerror(*(t->t.linenum));
@@ -385,6 +399,8 @@ input_param_list* load_input_params(tlist* t, int* skip) {
         *skip = *skip + 1;
         if (t->t.type == _variable) {
           tmp->name = *(t->t.str);
+          *skip = *skip + 1;
+          t = t->next;
         } else {
           eprint("Error: Expected variable name after string\n");
           syntaxerror(*(t->t.linenum));
@@ -569,34 +585,37 @@ bool function_definition() {
 }
 
 bool params() {
+  bool comma = false;
   while (fav.t->t.type != _right_parenthesis) {
     if (fav.t->t.type == _variable) {
+      comma = false;
       fav.t = fav.t->next;
       if (fav.t->t.type == _comma) {
+        comma = true;
         fav.t = fav.t->next;
         continue;
       }
     } else if (fav.t->t.type == _number) {
+      comma = false;
       fav.t = fav.t->next;
       if (fav.t->t.type == _comma) {
+        comma = true;
         fav.t = fav.t->next;
         continue;
       }
     } else if (fav.t->t.type == _decimalnumber) {
+      comma = false;
       fav.t = fav.t->next;
       if (fav.t->t.type == _comma) {
+        comma = true;
         fav.t = fav.t->next;
         continue;
       }
     } else if (fav.t->t.type == _array) {
+      comma = false;
       fav.t = fav.t->next;
       if (fav.t->t.type == _comma) {
-        fav.t = fav.t->next;
-        continue;
-      }
-    } else if (fav.t->t.type == _null) {
-      fav.t = fav.t->next;
-      if (fav.t->t.type == _comma) {
+        comma = true;
         fav.t = fav.t->next;
         continue;
       }
@@ -606,11 +625,13 @@ bool params() {
       return false;
   }
   if (fav.t->t.type == _right_parenthesis) {
+    if (comma) return false;
     return true;
   }
   return false;
 }
 bool def_params() {
+  if (fav.t->t.type == _right_parenthesis) return true;
   while (true) {
     if (type()) {
       if (fav.t->t.type == _variable) {
@@ -662,7 +683,6 @@ bool def_params() {
     return true;
   }
   return false;
-  printf("Deadcode\n");
 }
 bool type() {
   if (fav.t->t.type == _question_mark) {
@@ -708,20 +728,51 @@ bool body() {
       }
       return false;
       break;
-    case _variable:
+    case _variable:;
+      tlist* backup = fav.t;
       if (var_set()) {
+        if (fav.t->t.type == _semicolon) {
+          fav.t = fav.t->next;
+          return body();
+        }
+      } else {
+        fav.t = backup;
+        if (expression_check(0)) {
+          if (fav.t->t.type == _semicolon) {
+            fav.t = fav.t->next;
+            return body();
+          }
+        }
+      }
+      return false;
+      break;
+    case _semicolon:
+      syntaxerror(*(fav.t->t.linenum));
+      break;
+    case _right_curly_bracket:
+      return true;
+      break;
+    case _function:
+      return prog2();
+      break;
+    case _EOF:
+      return prog2();
+      break;
+    case _number:
+    case _decimalnumber:
+    case _string:
+    case _null:
+    case _int:
+    case _float:
+    case _array:
+    case _left_parenthesis:
+      if (expression_check(0)) {
         if (fav.t->t.type == _semicolon) {
           fav.t = fav.t->next;
           return body();
         }
       }
       return false;
-      break;
-    case _right_curly_bracket:
-      return true;
-      break;
-    case _semicolon:
-      syntaxerror(*(fav.t->t.linenum));
       break;
     default:
       return false;
@@ -734,17 +785,14 @@ bool if_statement() {
     fav.t = fav.t->next;
     if (fav.t->t.type == _left_parenthesis) {
       fav.t = fav.t->next;
-      if (expression_check()) {
-        if (fav.t->t.type == _right_parenthesis) {
+      if (expression_check(1)) {
+        if (fav.t->t.type == _left_curly_bracket) {
           fav.t = fav.t->next;
-          if (fav.t->t.type == _left_curly_bracket) {
-            fav.t = fav.t->next;
-            if (body()) {
-              if (fav.t->t.type == _right_curly_bracket) {
-                fav.t = fav.t->next;
-                if (else_statement()) {
-                  return true;
-                }
+          if (body()) {
+            if (fav.t->t.type == _right_curly_bracket) {
+              fav.t = fav.t->next;
+              if (else_statement()) {
+                return true;
               }
             }
           }
@@ -776,16 +824,13 @@ bool while_statement() {
     fav.t = fav.t->next;
     if (fav.t->t.type == _left_parenthesis) {
       fav.t = fav.t->next;
-      if (expression_check()) {
-        if (fav.t->t.type == _right_parenthesis) {
+      if (expression_check(1)) {
+        if (fav.t->t.type == _left_curly_bracket) {
           fav.t = fav.t->next;
-          if (fav.t->t.type == _left_curly_bracket) {
-            fav.t = fav.t->next;
-            if (body()) {
-              if (fav.t->t.type == _right_curly_bracket) {
-                fav.t = fav.t->next;
-                return true;
-              }
+          if (body()) {
+            if (fav.t->t.type == _right_curly_bracket) {
+              fav.t = fav.t->next;
+              return true;
             }
           }
         }
@@ -798,7 +843,8 @@ bool while_statement() {
 bool return_statement() {
   if (fav.t->t.type == _return) {
     fav.t = fav.t->next;
-    if (expression_check()) {
+    if (fav.t->t.type == _semicolon) return true;
+    if (expression_check(0)) {
       return true;
     } else if (fav.t->t.type == _semicolon) {
       return true;
@@ -812,7 +858,7 @@ bool var_set() {
     fav.t = fav.t->next;
     if (fav.t->t.type == _equals) {
       fav.t = fav.t->next;
-      if (expression_check()) {
+      if (expression_check(0)) {
         return true;
       }
     }
@@ -838,30 +884,25 @@ bool function_call() {
   }
   return false;
 }
-bool expression_check() {
-  if (fav.t->t.type == _variable || fav.t->t.type == _number ||
-      fav.t->t.type == _string || fav.t->t.type == _int ||
-      fav.t->t.type == _float || fav.t->t.type == _null ||
-      fav.t->t.type == _array || fav.t->t.type == _decimalnumber) {
-    fav.t = fav.t->next;
-    if (fav.t->t.type >= _plus && fav.t->t.type <= _not_typecheck) {
-      fav.t = fav.t->next;
-      if (expression_check()) {
-        return true;
+bool expression_check(int brackets) {
+  int skip = 0;
+  expr* e = read_expression(fav.t, &skip, brackets);
+  if (e == NULL) {
+    return false;
+  } else {
+    e = add_parenthesis(e);
+    expr_topostfix(&e);
+    if (e) {
+      expr_destroy(&e, false);
+      while (skip) {
+        fav.t = fav.t->next;
+        skip--;
       }
-    }
-    if (fav.t->t.type == _right_parenthesis || fav.t->t.type == _semicolon) {
+
       return true;
     }
-
-  } else if (fav.t->t.type == _identificator) {
-    if (function_call()) {
-      if (fav.t->t.type == _right_parenthesis || fav.t->t.type == _semicolon)
-        return true;
-      return expression_check();
-    }
+    return false;
   }
-  return false;
 }
 
 // Moves tokens which are not part of a function to the end of the token list
@@ -870,7 +911,7 @@ bool expression_check() {
 tlist* move_tokens(tlist* t) {
   tlist* functions = NULL;
   tlist* code = NULL;  // Code not in any function ("pseudo main function")
-  while (t->next != NULL) {
+  while (t->next != NULL) {// Looping through all of the tokens except the last one(EOF)
     if (t->t.type == _prolog) {
       functions = tlist_add(functions, t->t);
       t = t->next;
@@ -879,6 +920,7 @@ tlist* move_tokens(tlist* t) {
       while (skip) {
         functions = tlist_add(functions, t->t);
         t = t->next;
+        skip--;
       }
     } else {
       code = tlist_add(code, t->t);
@@ -889,6 +931,7 @@ tlist* move_tokens(tlist* t) {
     functions = tlist_add(functions, code->t);
     code = code->next;
   }
+  functions = tlist_add(functions, t->t); //Adding EOF to the end
   return functions;
 }
 
@@ -1018,10 +1061,10 @@ code* ConvertToCode(tlist* t) {
   }
   return NULL;
 }
-// Returns the called function, the first item in tlist should be the function's
-// name
+// Returns the called function, the first item in tlist should be the
+// function's name
 
-call* load_function_call(tlist* t, function_table* f, var_table* v, int* skip) {
+call* load_function_call(tlist* t, function_table* f, int* skip) {
   if (t == NULL || skip == NULL) {
     return NULL;
   }
@@ -1075,17 +1118,13 @@ call* load_function_call(tlist* t, function_table* f, var_table* v, int* skip) {
           break;
         case _variable:
           tmp->var = t->t.str;
-          if (var_table_get(&v, *(t->t.str)) == NULL) {
-            eprint("Variable %s is not declared\n", t->t.str->txt);
-            undefined_variable(*(t->t.linenum));
-          }
           maloc(tmp->next, sizeof(input));
           tmp = tmp->next;
           t = t->next;
           *skip = *skip + 1;
           continue;
           break;
-        case _string:
+        case _array:
           tmp->s = t->t.str;
           maloc(tmp->next, sizeof(input));
           tmp = tmp->next;

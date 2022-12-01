@@ -104,7 +104,7 @@ void expr_init(expr** e) {
   *e = NULL;
 }
 void expr_add(expr** e, int type, string* str, int* num, double* fl, int* op,
-              string* var, call* func) {
+              string* var, call* func, int* keywords) {
   if (e == NULL) return;
   expr* tmp = *e;
   if (*e == NULL) {
@@ -125,6 +125,7 @@ void expr_add(expr** e, int type, string* str, int* num, double* fl, int* op,
   tmp->var = var;
   tmp->func = func;
   tmp->first = *e;
+  tmp->typekeywords = keywords;
   tmp->next = NULL;
 }
 
@@ -140,6 +141,7 @@ void expr_destroy(expr** e, bool rec) {
       if (tmp->num != NULL) free(tmp->num);
       if (tmp->fl != NULL) free(tmp->fl);
       if (tmp->op != NULL) free(tmp->op);
+      if (tmp->typekeywords != NULL) free(tmp->typekeywords);
       call_destroy(&(tmp->func));
     }
     free(tmp);
@@ -155,6 +157,7 @@ void expr_destroy(expr** e, bool rec) {
   if (tmp_n->num != NULL) free(tmp_n->num);
   if (tmp_n->fl != NULL) free(tmp_n->fl);
   if (tmp_n->op != NULL) free(tmp_n->op);
+  if (tmp->typekeywords != NULL) free(tmp->typekeywords);
   call_destroy(&(tmp_n->func));
   free(tmp_n);
   tmp->next = NULL;

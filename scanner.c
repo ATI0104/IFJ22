@@ -96,7 +96,7 @@ token get_token() {
       exit(LEXICAL_ERROR);
     }
     if (one_line_comment) {
-      if (c == '\n') {
+      if (c == '\n'|| c == EOF) {
         linenum++;
         one_line_comment = false;
       }
@@ -225,7 +225,7 @@ token get_token() {
     switch (c) {
       case 'f':;  // function / float
         string_appendc(word, c);
-        get_identificator(word, "^[a-zA-Z_]+$");
+        get_identificator(word, "^[a-zA-Z_]{1}[a-zA-Z0-9_]*$");
         if (strcmp(word->txt, "function") == 0) {
           t.type = _function;
           string_destroy(word);
@@ -242,7 +242,7 @@ token get_token() {
         break;
       case 'i':  // if / int
         string_appendc(word, c);
-        get_identificator(word, "^[a-zA-Z_]+$");
+        get_identificator(word, "^[a-zA-Z_]{1}[a-zA-Z0-9_]*$");
         if (strcmp(word->txt, "if") == 0) {
           t.type = _if;
           string_destroy(word);
@@ -263,7 +263,7 @@ token get_token() {
         string_init(&varname);
         c = getc(stdin);
         string_appendc(&varname, c);
-        get_identificator(&varname, "^[a-zA-Z_]+$");
+        get_identificator(&varname, "^[a-zA-Z_]{1}[a-zA-Z0-9_]*$");
         string_set(word, "$");
         string_append(word, varname.txt);
         t.type = _variable;
@@ -285,7 +285,7 @@ token get_token() {
           return t;
         } else if (c == 'l') {
           string_set(word, "el");
-          get_identificator(word, "^[a-zA-Z_]+$");
+          get_identificator(word, "^[a-zA-Z_]{1}[a-zA-Z0-9_]*$");
           if (strcmp(word->txt, "else") == 0) {
             t.type = _else;
             string_destroy(word);
@@ -297,7 +297,7 @@ token get_token() {
         break;
       case 'n':  // null
         string_appendc(word, c);
-        get_identificator(word, "^[a-zA-Z_]+$");
+        get_identificator(word, "^[a-zA-Z_]{1}[a-zA-Z0-9_]*$");
         if (strcmp(word->txt, "null") == 0) {
           t.type = _null;
           string_destroy(word);
@@ -308,7 +308,7 @@ token get_token() {
         break;
       case 'r':  // return
         string_appendc(word, c);
-        get_identificator(word, "^[a-zA-Z_]+$");
+        get_identificator(word, "^[a-zA-Z_]{1}[a-zA-Z0-9_]*$");
         if (strcmp(word->txt, "return") == 0) {
           t.type = _return;
           string_destroy(word);
@@ -319,7 +319,7 @@ token get_token() {
         break;
       case 's':  // string
         string_appendc(word, c);
-        get_identificator(word, "^[a-zA-Z_]+$");
+        get_identificator(word, "^[a-zA-Z_]{1}[a-zA-Z0-9_]*$");
         if (strcmp(word->txt, "string") == 0) {
           t.type = _string;
           string_destroy(word);
@@ -330,7 +330,7 @@ token get_token() {
         break;
       case 'v':  // void
         string_appendc(word, c);
-        get_identificator(word, "^[a-zA-Z_]+$");
+        get_identificator(word, "^[a-zA-Z_]{1}[a-zA-Z0-9_]*$");
         if (strcmp(word->txt, "void") == 0) {
           t.type = _void;
           string_destroy(word);
@@ -341,7 +341,7 @@ token get_token() {
         break;
       case 'w':  // while
         string_appendc(word, c);
-        get_identificator(word, "^[a-zA-Z_]+$");
+        get_identificator(word, "^[a-zA-Z_]{1}[a-zA-Z0-9_]*$");
         if (strcmp(word->txt, "while") == 0) {
           t.type = _while;
           string_destroy(word);
@@ -467,6 +467,14 @@ token get_token() {
         break;
       case '"':
         c = getc(stdin);
+        if(c == '\"'){
+          string_set(word, "");
+          t.str = word;
+          t.type = _array;
+          *lnum = linenum;
+          t.linenum = lnum;
+          return t;
+        }
         string_appendc(word, c);
         while (1) {
           c = getc(stdin);
@@ -526,8 +534,8 @@ token get_token() {
       default:
         // number or  identificator or error
         string_appendc(word, c);
-        if (regex_check(word->txt, "^[a-zA-Z_]+$")) {  // identificator
-          get_identificator(word, "^[a-zA-Z_]+$");
+        if (regex_check(word->txt, "^[a-zA-Z_]{1}[a-zA-Z0-9_]*$")) {  // identificator
+          get_identificator(word, "^[a-zA-Z_]{1}[a-zA-Z0-9_]*$");
           t.type = _identificator;
           t.str = word;
           *lnum = linenum;
@@ -548,7 +556,7 @@ token get_token() {
     if (is_empty(word)) {
       lexerror;
     }
-    if (regex_check(word->txt, "^[a-zA-Z_]+$")) {
+    if (regex_check(word->txt, "^[a-zA-Z_]{1}[a-zA-Z0-9_]*$")) {
       t.type = _identificator;
       t.str = word;
       *lnum = linenum;
@@ -558,7 +566,7 @@ token get_token() {
       lexerror;
     }
   }
-  if (prolog_found1 && prolog_found && !one_line_comment && !multi_line_comment) {
+  if (prolog_found1 && prolog_found && !multi_line_comment) {
     t.type = _EOF;
     *lnum = linenum;
     t.linenum = lnum;

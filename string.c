@@ -59,6 +59,7 @@ void string_set(string* str, char* txt) {
  * @param str String to destroy
  */
 void string_destroy(string* str) {
+  if (str == NULL) return;
   free(str->txt);
   str->txt = NULL;
   str->size = 0;
