@@ -86,6 +86,7 @@ void expr_toprefix(expr** e);
 void expr_reverse(expr** e);
 void call_init(call** c);
 void call_create(call** c, string* f_name, input* in, output* out);
+bool call_check(call** c, input_param_list *param);
 void call_destroy(call** c);
 void input_init(input** in);
 void input_add(input** in, int* i, double* f, string* s, string* var);
