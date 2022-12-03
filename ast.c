@@ -175,6 +175,39 @@ void call_create(call** c, string* f_name, input* in, output* out) {
   tmp->in = in;
   tmp->out = out;
 }
+bool call_check(call** c, input_param_list *param){
+  call* tmp = *c;
+  if (tmp == NULL) {
+    maloc(*c, sizeof(call));
+    tmp = *c;
+  }
+  while(param!= NULL ){
+    if(strcmp(param->name.txt, tmp->function_name->txt)==0){   //function is found
+        while (param->next!=NULL) {
+          if (param->type == _int){ //_int
+            if(tmp->in->i==NULL) return false;
+          }
+          if (param->type == _float){ //_float
+            if(tmp->in->f == NULL) return false;
+          }
+          if (param->type == _string){ //_string
+            if(strcmp(tmp->in->s->txt,"")) return false;
+          }
+          if (param->type == _variable){ //_variable
+            if(strcmp(tmp->in->var->txt,"")) return false;
+          }
+          if (param->type == _bool){ //_bool
+            if(tmp->in->null == false) return false;
+          } 
+
+          param = param->next;
+          tmp->in = tmp->in->next;
+        }
+        return true;
+      }
+  }
+  return false;
+}
 void call_destroy(call** c) {
   if (c == NULL) return;
   if (*c == NULL) return;
