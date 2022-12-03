@@ -14,7 +14,11 @@ int main() {
     eprint("Works!");
   else
     syntaxerror(-1);
-  m = move_tokens(m);
+  tlist* mainfunction;
+  var_table* globalvariables;
+  m = move_tokens(m, &mainfunction, &globalvariables);
+  AST* ast = ConvertToAst(m, mainfunction, globalvariables);
+  if (ast == NULL) eprint("AST is NULL");
 #ifdef _skip_prolog_check
   expr* e;
   int c = 0;
@@ -25,7 +29,7 @@ int main() {
   expr_print(e, true);
 #endif
   // Prints out basic informations about the generated tokens
- token tok;
+  token tok;
   while (m != NULL) {
     tok = m->t;
     printf("Token from line %d\n has a type of %d.\n", *(tok.linenum),

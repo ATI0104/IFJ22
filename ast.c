@@ -48,7 +48,7 @@ void code_init(code** c) {
   *c = NULL;
 }
 void code_add(code** c, int lnum, code* i, code* e, code* loop, expr* exp,
-              call* jmp) {
+              call* jmp,string* var, expr* ret) {
   if (c == NULL) return;
   code* tmp = *c;
   if (*c == NULL) {
@@ -69,6 +69,8 @@ void code_add(code** c, int lnum, code* i, code* e, code* loop, expr* exp,
   tmp->jmp = jmp;
   tmp->first = *c;
   tmp->next = NULL;
+  tmp->var = var;
+  tmp->ret = ret;
 }
 
 void code_destroy(code** c) {
@@ -152,12 +154,6 @@ void expr_destroy(expr** e, bool rec) {
     tmp_n = tmp_n->next;
     tmp = tmp->next;
   }
-  string_destroy(tmp_n->str);
-  string_destroy(tmp_n->var);
-  if (tmp_n->num != NULL) free(tmp_n->num);
-  if (tmp_n->fl != NULL) free(tmp_n->fl);
-  if (tmp_n->op != NULL) free(tmp_n->op);
-  if (tmp->typekeywords != NULL) free(tmp->typekeywords);
   call_destroy(&(tmp_n->func));
   free(tmp_n);
   tmp->next = NULL;

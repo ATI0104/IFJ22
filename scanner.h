@@ -47,6 +47,9 @@
 #define _question_mark 135        // '?'
 #define _float 136                // 'float'
 #define _decimalnumber 137        // [0-9]+.1[0-9]+
+#define _true 138                 // 'true'
+#define _false 139                // 'false'
+#define _bool 140                   // 'bool'
 typedef struct token {
   int type;
   string *str;

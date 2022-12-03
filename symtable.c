@@ -217,6 +217,7 @@ void var_table_add(var_table **tree, var_table *var) {
 
 var_table *var_table_get(var_table **tree, string name) {
   if (*tree == NULL) return NULL;
+  if (name.txt == NULL) return NULL;
   if (strcmp((*tree)->name.txt, name.txt) == 0) return *tree;
   if (strcmp((*tree)->name.txt, name.txt) > 0) {
     return var_table_get(&(*tree)->right_var, name);

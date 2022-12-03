@@ -151,3 +151,4 @@ void string_deletefirst(string* str) {
   }
   string_destroy(str);
 }
+

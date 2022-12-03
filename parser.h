@@ -5,22 +5,22 @@
 
 #include "ast.h"
 #include "macros.h"
-#include "scanner.h"
 #include "stack.h"
 #include "string.h"
 #include "symtable.h"
 
-tlist* create_tlist();
-expr* read_expression(tlist* t, int* c, int brackets);
-expr* add_parenthesis(expr* e);
-
-tlist* create_floats(tlist* t);
-tlist* create_negative(tlist* t);
-tlist* process_exponent(tlist* t);
-
+expr* read_expression(int brackets, bool expriif,
+                      string* fname);
 void add_func(function_table** tree, tlist* t);
 var_table* load_variables(tlist* t, input_param_list* input);
-call* load_function_call(tlist* t, function_table* f, int* skip);
+call* load_function_call();
+tlist* move_tokens(tlist* t, tlist** mainfunction, var_table** globalvariables);
+int function_skip(tlist* tokens);
+tlist* tlist_add(tlist* t, token tok);
+AST* ConvertToAst(tlist* functions, tlist* mainfunction,var_table*globalvars);
+code* ConvertToCode();
+void combinevartables(function_table** root);
+bool isin(int i, int l[]);
 
 bool check_syntax(tlist* t, function_table* f);
 bool prog();
@@ -36,11 +36,11 @@ bool while_statement();
 bool return_statement();
 bool var_set();
 bool function_call();
-bool expression_check(int brackets);
-tlist* move_tokens(tlist* t);
-int function_skip(tlist* tokens);
-tlist* tlist_add(tlist* t, token tok);
+bool expression_check(int brackets, bool exprinif);
+tlist* create_floats(tlist* t);
+tlist* create_negative(tlist* t);
+tlist* process_exponent(tlist* t);
+expr* add_parenthesis(expr* e);
+tlist* create_tlist();
 
-AST* ConvertToAst(tlist* functions, tlist* mainfunction);
-code* ConvertToCode(tlist* t);
 #endif
