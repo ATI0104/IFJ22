@@ -718,6 +718,11 @@ AST* ConvertToAst(tlist* functions, tlist* mainfunction,
   maloc(main, sizeof(string));
   string_init(main);
   string_set(main, "m@in");
+  function_table* mainf;
+  maloc(mainf, sizeof(function_table));
+  mainf->name = *main;
+  mainf->variable = globalvars;
+  function_table_add(&(fav.f), mainf);
   fav.t = mainfunction;
   AST_add(&tmp, main, ConvertToCode(main));
   return tmp;

@@ -66,7 +66,7 @@ typedef struct varlist {
 
 typedef struct my_favorites {
   function_table* f;  // function table
-  varlist* v;         // current local variable state
+  var_table* v;         // current local variable state
   tlist* t;           // token list
   AST* a;             // abstract syntax tree
 } my_favorites;
