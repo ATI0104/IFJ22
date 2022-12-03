@@ -3,6 +3,7 @@
 #include "string.h"
 #include "symtable.h"
 void expr_print(expr* e, bool postfix);
+void print_vartable(var_table* v);
 int main() {
   tlist* m = create_tlist();
   string a;
@@ -17,6 +18,7 @@ int main() {
   tlist* mainfunction;
   var_table* globalvariables;
   m = move_tokens(m, &mainfunction, &globalvariables);
+  print_vartable(globalvariables);
   AST* ast = ConvertToAst(m, mainfunction, globalvariables);
   if (ast == NULL) eprint("AST is NULL");
 #ifdef _skip_prolog_check
@@ -107,4 +109,11 @@ void expr_print(expr* e, bool postfix) {
     e = e->next;
   }
   printf("\n");
+}
+
+void print_vartable(var_table* v) {
+  if (v == NULL) return;
+  printf("name: \"%s\"\n", v->name.txt);
+  print_vartable(v->left_var);
+  print_vartable(v->right_var);
 }

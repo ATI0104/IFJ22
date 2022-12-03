@@ -390,6 +390,9 @@ tlist* move_tokens(tlist* t, tlist** mainfunction,
   }
   tlist* functions = NULL;
   tlist* code = NULL;  //("pseudo main function")
+  token codebegin;
+  codebegin.type = _left_curly_bracket;
+  code = tlist_add(code, codebegin);
   while (t->next !=
          NULL) {  // Looping through all of the tokens except the last one(EOF)
     if (t->t.type == _prolog) {
@@ -723,7 +726,7 @@ AST* ConvertToAst(tlist* functions, tlist* mainfunction,
   mainf->name = *main;
   mainf->variable = globalvars;
   function_table_add(&(fav.f), mainf);
-  fav.t = mainfunction;
+  fav.t = mainfunction->next; //Skipping the first left_curly_bracket
   AST_add(&tmp, main, ConvertToCode(main));
   return tmp;
 }
