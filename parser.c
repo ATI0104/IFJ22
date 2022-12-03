@@ -765,7 +765,14 @@ code* ConvertToCode(string* fname) {
                 code* iffalse = ConvertToCode(fname);
                 code_add(&result, 0, iftrue, iffalse, NULL, e, NULL, NULL,
                          NULL);
+                if (fav.t->t.type == _right_curly_bracket) {
+                  fav.t = fav.t->next;
+                }
+              } else {
+                eprint("Missing Else.\n");
               }
+            } else {
+              eprint("Missing {.\n");
             }
           }
           break;
@@ -778,8 +785,8 @@ code* ConvertToCode(string* fname) {
             fav.t = fav.t->next;
             code* whiletrue = ConvertToCode(fname);
             if (fav.t->t.type == _right_curly_bracket) {
-              fav.t = fav.t->next;
               code_add(&result, 0, NULL, NULL, whiletrue, e2, NULL, NULL, NULL);
+              fav.t = fav.t->next;
             }
           }
           break;
@@ -796,10 +803,16 @@ code* ConvertToCode(string* fname) {
         case _identificator:;
           call* c = load_function_call();
           code_add(&result, 0, NULL, NULL, NULL, NULL, c, NULL, NULL);
+          fav.t = fav.t->next;
+          if (fav.t->t.type == _semicolon) {
+            fav.t = fav.t->next;
+          }
           break;
         default:;
           expr* e4 = read_expression(0, false, fname);
-          if(!e4) eprint("loopde loop!\n");
+          if (!e4) {
+            eprint("loopde loop!\n");
+          }
           e4 = add_parenthesis(e4);
           expr_toprefix(&e4);
           if (fav.t->t.type == _semicolon) {
