@@ -117,6 +117,8 @@ expr* read_expression(int brackets, bool exprinif, string* fname) {
   }
   expr* tmp;
   expr_init(&tmp);
+  bool operandexpected = true;
+  bool operatorexpected = false;
   while (fav.t != NULL) {
     if (fav.t == NULL) {
       eprint("Incorrect expression\n");
@@ -124,11 +126,19 @@ expr* read_expression(int brackets, bool exprinif, string* fname) {
     }
     if ((fav.t->t.type >= _plus && fav.t->t.type <= _not_typecheck) ||
         fav.t->t.type == _dot) {
+      if (!operatorexpected) {
+        return NULL;
+      }
       expr_add(&tmp, 0, NULL, NULL, NULL, &(fav.t->t.type), NULL, NULL, NULL);
       fav.t = fav.t->next;
+      operandexpected = true;
+      operatorexpected = false;
       continue;
     }
     if (fav.t->t.type == _left_parenthesis) {
+      if (!operandexpected) {
+        return NULL;
+      }
       expr_add(&tmp, 0, NULL, NULL, NULL, &(fav.t->t.type), NULL, NULL, NULL);
       fav.t = fav.t->next;
       brackets++;
@@ -141,6 +151,7 @@ expr* read_expression(int brackets, bool exprinif, string* fname) {
       continue;
     }
     if (fav.t->t.type == _semicolon || fav.t->t.type == _left_curly_bracket) {
+      if (!operatorexpected) return NULL;
       if (brackets == 0) {
         if (exprinif) {
           if (fav.t->t.type == _left_curly_bracket) {
@@ -155,48 +166,59 @@ expr* read_expression(int brackets, bool exprinif, string* fname) {
       }
       return NULL;
     }
-    switch (fav.t->t.type) {
-      case _number:
-        expr_add(&tmp, -1, NULL, fav.t->t.i_val, NULL, NULL, NULL, NULL, NULL);
-        fav.t = fav.t->next;
-        break;
-      case _decimalnumber:
-        expr_add(&tmp, -1, NULL, NULL, fav.t->t.f_val, NULL, NULL, NULL, NULL);
-        fav.t = fav.t->next;
-        break;
-      case _variable:
-        if (checkvars) {
-          if (var_table_get(&(f->variable), *(fav.t->t.str)) == NULL) {
-            undefined_variable(-1);
+    if (operandexpected) {
+      operandexpected = false;
+      switch (fav.t->t.type) {
+        case _number:
+          expr_add(&tmp, -1, NULL, fav.t->t.i_val, NULL, NULL, NULL, NULL,
+                   NULL);
+          fav.t = fav.t->next;
+          operatorexpected = true;
+          break;
+        case _decimalnumber:
+          expr_add(&tmp, -1, NULL, NULL, fav.t->t.f_val, NULL, NULL, NULL,
+                   NULL);
+          fav.t = fav.t->next;
+          operatorexpected = true;
+          break;
+        case _variable:
+          if (checkvars) {
+            if (var_table_get(&(f->variable), *(fav.t->t.str)) == NULL) {
+              undefined_variable(-1);
+            }
           }
-        }
-        expr_add(&tmp, -1, NULL, NULL, NULL, NULL, fav.t->t.str, NULL, NULL);
-        fav.t = fav.t->next;
-        break;
-      case _array:
-        expr_add(&tmp, -1, fav.t->t.str, NULL, NULL, NULL, NULL, NULL, NULL);
-        fav.t = fav.t->next;
-
-        break;
-      case _identificator:;
-        call* cal = load_function_call();
-        expr_add(&tmp, -1, NULL, NULL, NULL, NULL, NULL, cal, NULL);
-        fav.t = fav.t->next;
-        break;
-      case _int:
-      case _float:
-      case _string:
-      case _null:;
-        int* type;
-        maloc(type, sizeof(int));
-        *type = fav.t->t.type;
-        expr_add(&tmp, 0, NULL, NULL, NULL, NULL, NULL, NULL, type);
-        fav.t = fav.t->next;
-        break;
-      default:
-        return false;
-        break;
-    }
+          expr_add(&tmp, -1, NULL, NULL, NULL, NULL, fav.t->t.str, NULL, NULL);
+          fav.t = fav.t->next;
+          operatorexpected = true;
+          break;
+        case _array:
+          expr_add(&tmp, -1, fav.t->t.str, NULL, NULL, NULL, NULL, NULL, NULL);
+          fav.t = fav.t->next;
+          operatorexpected = true;
+          break;
+        case _identificator:;
+          call* cal = load_function_call();
+          expr_add(&tmp, -1, NULL, NULL, NULL, NULL, NULL, cal, NULL);
+          fav.t = fav.t->next;
+          operatorexpected = true;
+          break;
+        case _int:
+        case _float:
+        case _string:
+        case _null:;
+          int* type;
+          maloc(type, sizeof(int));
+          *type = fav.t->t.type;
+          expr_add(&tmp, 0, NULL, NULL, NULL, NULL, NULL, NULL, type);
+          fav.t = fav.t->next;
+          operatorexpected = true;
+          break;
+        default:
+          return false;
+          break;
+      }
+    } else
+      return NULL;
   }
   return NULL;
 }
@@ -695,7 +717,6 @@ bool isin(int i, int l[]) {
  * outside of functions is moved to the mainfunction list)*/
 AST* ConvertToAst(tlist* functions, tlist* mainfunction,
                   var_table* globalvars) {
-  if (globalvars == NULL) return NULL;
   AST* tmp;
   AST_init(&tmp);
   combinevartables(&fav.f);
@@ -726,7 +747,7 @@ AST* ConvertToAst(tlist* functions, tlist* mainfunction,
   mainf->name = *main;
   mainf->variable = globalvars;
   function_table_add(&(fav.f), mainf);
-  fav.t = mainfunction->next; //Skipping the first left_curly_bracket
+  fav.t = mainfunction->next;  // Skipping the first left_curly_bracket
   AST_add(&tmp, main, ConvertToCode(main));
   return tmp;
 }
@@ -1236,7 +1257,6 @@ bool expression_check(int brackets, bool exprinif) {
     e = add_parenthesis(e);
     expr_toprefix(&e);
     if (e) {
-      // expr_destroy(&e, false);
       return true;
     }
     return false;

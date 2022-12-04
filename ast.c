@@ -176,16 +176,18 @@ void call_create(call** c, string* f_name, input* in, output* out) {
   tmp->out = out;
 }
 bool call_check(call** c, input_param_list *param){
- int t;
+ int t = 0;
   call* tmp = *c;
   if (tmp == NULL) {
     maloc(*c, sizeof(call));
     tmp = *c;
   }
   while(param!= NULL ){
+    if(t == 1) return false;
+    /*
     if(strcmp(param->name.txt, tmp->function_name->txt)==0){   //function is found
         while (param->next!=NULL) {
-          t=varlist_get(v, tmp->in->var->txt);
+          //t=varlist_get(v, tmp->in->var->txt);
           if (param->type == _int){ //_int
             if(tmp->in->i==NULL ||  t != _int) return false;
           }
@@ -200,9 +202,9 @@ bool call_check(call** c, input_param_list *param){
           } 
           param = param->next;
           tmp->in = tmp->in->next;
-        }
+        }*/
         return true;
-      }
+      //}
   }
   return false;
 }

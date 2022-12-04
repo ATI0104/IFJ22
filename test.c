@@ -20,7 +20,11 @@ int main() {
   m = move_tokens(m, &mainfunction, &globalvariables);
   print_vartable(globalvariables);
   AST* ast = ConvertToAst(m, mainfunction, globalvariables);
-  if (ast == NULL) eprint("AST is NULL");
+  if (ast == NULL) {
+    eprint("AST is NULL");
+    exit(Internal_Error);
+  }
+
 #ifdef _skip_prolog_check
   expr* e;
   int c = 0;
@@ -45,7 +49,7 @@ int main() {
     if (tok.str != NULL) {
       printf("It's string value = \"%s\"\n", tok.str->txt);
     }
-    m = m->next;
+      m = m->next;
   }
   return 0;
 }
