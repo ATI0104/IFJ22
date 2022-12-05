@@ -9,11 +9,12 @@
 #define output input
 
 typedef struct input {
-  int* i;       // constant positive integer
-  double* f;    // constant decimal number or negative integer
-  string* s;    // constant string
-  string* var;  // variable
-  bool* null;   // null
+  int* i;               // constant positive integer
+  double* f;            // constant decimal number or negative integer
+  string* s;            // constant string
+  string* var;          // variable
+  bool* null;           // null
+  bool* question_mark;  // ?
   struct input* first;
   struct input* next;
 } input;

@@ -8,6 +8,7 @@
 
 typedef struct input_param_list {
   string name;
+  bool question_mark;
   int type;
   struct input_param_list *next;
 } input_param_list;
@@ -25,6 +26,7 @@ typedef struct var_table {
 typedef struct function_table {
   string name;
   bool built_in;
+  bool questionmark;
   // input param
   input_param_list *input_type;
 
