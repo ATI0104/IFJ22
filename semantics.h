@@ -12,5 +12,6 @@ bool Check_code(code* c, function_table* f, var_table* localVars,
 bool check_return_type(expr* ret, function_table* f, string funname,
                        varlist* v);
 int get_expression_type(expr* e, varlist* v, function_table* f);
+void Check_expression(expr* e, function_table* f, varlist* v);
 bool call_check(call* c, function_table* f, varlist* v);
 #endif

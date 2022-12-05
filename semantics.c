@@ -95,7 +95,7 @@ bool call_check(call* c, function_table* f, varlist* v) {
         if (i->i) {
           break;
         } else if (i->var) {
-          if (varlist_get(&v, i->var) == _int) {
+          if (varlist_get(v, i->var) == _int) {
             break;
           } else {
             incorrect_type_of_argument(-1);
@@ -107,7 +107,7 @@ bool call_check(call* c, function_table* f, varlist* v) {
         if (i->f) {
           break;
         } else if (i->var) {
-          if (varlist_get(&v, i->var) == _float) {
+          if (varlist_get(v, i->var) == _float) {
             break;
           } else {
             incorrect_type_of_argument(-1);
@@ -119,7 +119,7 @@ bool call_check(call* c, function_table* f, varlist* v) {
         if (i->s) {
           break;
         } else if (i->var) {
-          if (varlist_get(&v, i->var) == _string) {
+          if (varlist_get(v, i->var) == _string) {
             break;
           } else {
             incorrect_type_of_argument(-1);
@@ -131,7 +131,7 @@ bool call_check(call* c, function_table* f, varlist* v) {
         if (i->null) {
           break;
         } else if (i->var) {
-          if (varlist_get(&v, i->var) == _void) {
+          if (varlist_get(v, i->var) == _void) {
             break;
           } else {
             incorrect_type_of_argument(-1);
@@ -156,7 +156,7 @@ bool call_check(call* c, function_table* f, varlist* v) {
 void Check_expression(expr* e, function_table* f, varlist* v) {
   while (e != NULL) {
     if (e->var) {
-      if (varlist_get(&v, e->var) == 0) {
+      if (varlist_get(v, e->var) == 0) {
         undefined_variable(-1);
       }
     } else if (e->func) {
