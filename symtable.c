@@ -10,6 +10,7 @@ void function_table_init(function_table **tree) {
   reads_ft->input_type = NULL;
   string_set(&(*reads_ft).name, "reads");
   reads_ft->output_type = _string;
+  reads_ft->built_in = true;
   function_table_add(tree, reads_ft);
 
   // readi()
@@ -18,6 +19,7 @@ void function_table_init(function_table **tree) {
   readi_ft->input_type = NULL;
   string_set(&(*readi_ft).name, "readi");
   readi_ft->output_type = _int;
+  readi_ft->built_in = true;
   function_table_add(tree, readi_ft);
 
   // readf()
@@ -26,6 +28,7 @@ void function_table_init(function_table **tree) {
   readf_ft->input_type = NULL;
   string_set(&(*readf_ft).name, "readf");
   readf_ft->output_type = _float;
+  readf_ft->built_in = true;
   function_table_add(&(*tree), readf_ft);
   /*SPEC FUNCTION*/
 
@@ -35,6 +38,7 @@ void function_table_init(function_table **tree) {
   write_ft->input_type = NULL;
   string_set(&(write_ft->name), "write");
   write_ft->output_type = _null;
+  write_ft->built_in = true;
   function_table_add(&(*tree), write_ft);
 
   // floatval(term) SPEC FUNCTION
@@ -45,6 +49,7 @@ void function_table_init(function_table **tree) {
   floatval_ft->input_type = NULL;
   string_set(&(*floatval_ft).name, "floatval");
   floatval_ft->output_type = _float;
+  floatval_ft->built_in = true;
   function_table_add(&(*tree), floatval_ft);
 
   // intval(term)
@@ -55,6 +60,7 @@ void function_table_init(function_table **tree) {
   intval_ft->input_type = NULL;
   string_set(&(*intval_ft).name, "intval");
   intval_ft->output_type = _int;
+  intval_ft->built_in = true;
   function_table_add(&(*tree), intval_ft);
 
   // strval(term)
@@ -64,6 +70,7 @@ void function_table_init(function_table **tree) {
   strval_ft->input_type = NULL;
   string_set(&(*strval_ft).name, "strval");
   strval_ft->output_type = _string;
+  strval_ft->built_in = true;
   function_table_add(&(*tree), strval_ft);
 
   // strlen()
@@ -77,6 +84,7 @@ void function_table_init(function_table **tree) {
   string_set(&(strlen_ft->name), "strlen");
   strlen_ft->input_type = params;
   strlen_ft->output_type = _int;  //_int
+  strlen_ft->built_in = true;
   function_table_add(tree, strlen_ft);
 
   // substring(string s, int id, int id2)
@@ -96,6 +104,7 @@ void function_table_init(function_table **tree) {
   maloc(s, sizeof(string));
   string_set(&(*substring_ft).name, "substring");
   substring_ft->output_type = _string;
+  substring_ft->built_in = true;
   function_table_add(&(*tree), substring_ft);
 
   // ord(string c)
@@ -109,6 +118,7 @@ void function_table_init(function_table **tree) {
   maloc(s, sizeof(string));
   string_set(&(*ord_ft).name, "ord");
   ord_ft->output_type = _int;
+  ord_ft->built_in = true;
   function_table_add(&(*tree), ord_ft);
 
   // chr(int i)
@@ -122,6 +132,7 @@ void function_table_init(function_table **tree) {
   maloc(s, sizeof(string));
   string_set(&(*chr_ft).name, "chr");
   chr_ft->output_type = _string;
+  chr_ft->built_in = true;
   function_table_add(tree, chr_ft);
   return;
 }

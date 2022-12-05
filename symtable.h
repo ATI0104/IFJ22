@@ -26,12 +26,13 @@ typedef struct var_table {
 typedef struct function_table {
   string name;
   bool built_in;
-  bool questionmark;
+
   // input param
   input_param_list *input_type;
 
   // output type
   int output_type;
+  bool questionmark;
 
   var_table *variable;
 
