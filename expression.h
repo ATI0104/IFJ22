@@ -108,4 +108,5 @@ void insertAfter(token *tok);
 bool reduceDyadicOperation(TStack *stack, StackItem **possibleRule);
 bool reduceIdentifier(TStack *stack, StackItem **possibleRule);
 bool reduce(TStack *stack);
+precedencyAnalysisReturn parseExpression(tlist *tok);
 #endif

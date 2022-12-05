@@ -8,7 +8,7 @@
 #include "stack.h"
 #include "string.h"
 #include "symtable.h"
-
+#include "expression.h"
 expr* read_expression(int brackets, bool expriif, string* fname);
 void add_func(function_table** tree, tlist* t);
 var_table* load_variables(tlist* t, input_param_list* input);
