@@ -1169,17 +1169,24 @@ bool function_call() {
   return false;
 }
 bool expression_check(int brackets, bool exprinif) {
+  precedencyAnalysisReturn r = parseExpression(fav.t);
+  if(r.ok){
+     return true;
+  } else {
+  return false;
+  }
   expr* e = read_expression(brackets, exprinif, NULL);
   if (e == NULL) {
     return false;
-  } else {
+  }
+  /* else {
     e = add_parenthesis(e);
     expr_toprefix(&e);
     if (e) {
       return true;
     }
     return false;
-  }
+  }*/
 }
 
 expr* add_parenthesis(expr* e) {
