@@ -2,11 +2,11 @@
 
 /**
  * @brief regex function
- * 
+ *
  * @param txt input string
  * @param re regex to match
- * @return true 
- * @return false 
+ * @return true
+ * @return false
  */
 bool regex_check(char *txt, char *re) {
   if (re == NULL) return false;
@@ -29,8 +29,8 @@ bool regex_check(char *txt, char *re) {
 }
 /**
  * @brief Generate a token from stdin
- * 
- * @return token 
+ *
+ * @return token
  */
 token get_token() {
   static int linenum = 1;
@@ -96,7 +96,7 @@ token get_token() {
       exit(LEXICAL_ERROR);
     }
     if (one_line_comment) {
-      if (c == '\n'|| c == EOF) {
+      if (c == '\n' || c == EOF) {
         linenum++;
         one_line_comment = false;
       }
@@ -293,6 +293,10 @@ token get_token() {
             t.linenum = lnum;
             return t;
           }
+        } else {
+          string_appendc(word, 'e');
+          string_appendc(word, c);
+          get_identificator(word, "^[a-zA-Z_]{1}[a-zA-Z0-9_]*$");
         }
         break;
       case 'n':  // null
@@ -467,7 +471,7 @@ token get_token() {
         break;
       case '"':
         c = getc(stdin);
-        if(c == '\"'){
+        if (c == '\"') {
           string_set(word, "");
           t.str = word;
           t.type = _array;
@@ -534,7 +538,8 @@ token get_token() {
       default:
         // number or  identificator or error
         string_appendc(word, c);
-        if (regex_check(word->txt, "^[a-zA-Z_]{1}[a-zA-Z0-9_]*$")) {  // identificator
+        if (regex_check(word->txt,
+                        "^[a-zA-Z_]{1}[a-zA-Z0-9_]*$")) {  // identificator
           get_identificator(word, "^[a-zA-Z_]{1}[a-zA-Z0-9_]*$");
           t.type = _identificator;
           t.str = word;
@@ -611,8 +616,9 @@ int is_whitespace(char c, bool *one_line_comment, bool *multi_line_comment,
 }
 
 /**
- * @brief Reads from stdin until it finds a character that is not matched by the regex
- * 
+ * @brief Reads from stdin until it finds a character that is not matched by the
+ * regex
+ *
  * @param word // string where the read characters are appended
  * @param re  // regex
  */
@@ -631,8 +637,8 @@ void get_identificator(string *word, char *re) {
 }
 /**
  * @brief Converts special characters to their IFJ22 representation
- * 
- * @param str 
+ *
+ * @param str
  */
 void slash_decode(string *str) {
   if (str == NULL) return;
