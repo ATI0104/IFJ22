@@ -222,6 +222,15 @@ expr* read_expression(int brackets, bool exprinif, string* fname) {
   }
   return NULL;
 }
+bool foundininput(input_param_list* list, string* name) {
+  if (list == NULL) return false;
+  while (list != NULL) {
+    if (list->name.txt != NULL)
+      if (strcmp(name->txt, list->name.txt) == 0) return true;
+    list = list->next;
+  }
+  return false;
+}
 
 input_param_list* load_input_params(tlist* t, int* skip) {
   *skip = 0;
@@ -240,6 +249,9 @@ input_param_list* load_input_params(tlist* t, int* skip) {
         t = t->next;
         *skip = *skip + 1;
         if (t->t.type == _variable) {
+          if (foundininput(l, t->t.str)) {
+            semantic_error(*t->t.linenum, "Duplicate input parameter name");
+          }
           tmp->name = *(t->t.str);
           *skip = *skip + 1;
           t = t->next;
@@ -253,6 +265,9 @@ input_param_list* load_input_params(tlist* t, int* skip) {
         t = t->next;
         *skip = *skip + 1;
         if (t->t.type == _variable) {
+          if (foundininput(l, t->t.str)) {
+            semantic_error(*t->t.linenum, "Duplicate input parameter name");
+          }
           tmp->name = *(t->t.str);
           *skip = *skip + 1;
           t = t->next;
@@ -267,7 +282,11 @@ input_param_list* load_input_params(tlist* t, int* skip) {
         t = t->next;
         *skip = *skip + 1;
         if (t->t.type == _variable) {
+          if (foundininput(l, t->t.str)) {
+            semantic_error(*t->t.linenum, "Duplicate input parameter name");
+          }
           tmp->name = *(t->t.str);
+
           t = t->next;
           *skip = *skip + 1;
         } else {
@@ -275,10 +294,17 @@ input_param_list* load_input_params(tlist* t, int* skip) {
           syntaxerror(*(t->t.linenum));
         }
         break;
-      case _null:
-        tmp->type = _null;
+      case _void:
+        tmp->type = _void;
+        t = t->next;
+
+        *skip = *skip + 1;
+        break;
+      case _question_mark:
+        tmp->question_mark = true;
         t = t->next;
         *skip = *skip + 1;
+        continue;
         break;
       default:
         eprint("Error: Expected type after comma\n");
@@ -317,9 +343,10 @@ void add_func(function_table** tree, tlist* t) {
           if (t->t.type == _right_parenthesis) t = t->next;
           if (t->t.type == _colon) {
             t = t->next;
-            if (t->t.type == _question_mark)
-              t = t->next;  // Should we deal
-                            // with this?
+            if (t->t.type == _question_mark) {
+              t = t->next;
+              tmp->questionmark = true;
+            }
             if (t->t.type == _int) {
               tmp->output_type = _int;
               t = t->next;
@@ -526,6 +553,10 @@ call* load_function_call() {
       if (fav.t->t.type == _comma) {
         fav.t = fav.t->next;
         continue;
+      }
+      if (fav.t->t.type == _question_mark) {
+        maloc(tmp->question_mark, sizeof(bool));
+        fav.t = fav.t->next;
       }
       switch (fav.t->t.type) {
         case _number:
@@ -903,6 +934,14 @@ bool params() {
         fav.t = fav.t->next;
         continue;
       }
+    } else if (fav.t->t.type == _null) {
+      comma = false;
+      fav.t = fav.t->next;
+      if (fav.t->t.type == _comma) {
+        comma = true;
+        fav.t = fav.t->next;
+        continue;
+      }
     } else if (fav.t->t.type == _right_parenthesis) {
       return true;
     } else
@@ -1169,24 +1208,17 @@ bool function_call() {
   return false;
 }
 bool expression_check(int brackets, bool exprinif) {
-  precedencyAnalysisReturn r = parseExpression(fav.t);
-  if(r.ok){
-     return true;
-  } else {
-  return false;
-  }
   expr* e = read_expression(brackets, exprinif, NULL);
   if (e == NULL) {
     return false;
-  }
-  /* else {
+  } else {
     e = add_parenthesis(e);
     expr_toprefix(&e);
     if (e) {
       return true;
     }
     return false;
-  }*/
+  }
 }
 
 expr* add_parenthesis(expr* e) {

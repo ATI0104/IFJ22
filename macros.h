@@ -12,7 +12,7 @@
 #define Internal_Error 99
 #define maloc(pointer, size)    \
   do {                          \
-    pointer = calloc(size,1);     \
+    pointer = calloc(size, 1);  \
     if (pointer == NULL) {      \
       eprint("Malloc Error\n"); \
       exit(Internal_Error);     \
@@ -94,13 +94,16 @@
       eprint("Type mismatch\n");               \
     exit(Type_Mismatch);                       \
   } while (0)
-#define semantic_error(t)                       \
-  do {                                          \
-    if (t > 0)                                  \
-      eprint("Semantic error on line %d\n", t); \
-    else                                        \
-      eprint("Semantic error\n");               \
-    exit(Semantic_Error);                       \
+#define semantic_error(t, s)                           \
+  do {                                                 \
+    if (t > 0)                                         \
+      eprint("Semantic error on line %d\n%s\n", t, s); \
+    else                                               \
+      eprint("Semantic error\n%s\n", s);               \
+    exit(Semantic_Error);                              \
   } while (0)
-#define elsefree(pointer) else{if(pointer)free(pointer);}
+#define elsefree(pointer)       \
+  else {                        \
+    if (pointer) free(pointer); \
+  }
 #endif

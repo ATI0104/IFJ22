@@ -86,10 +86,13 @@ bool check_return_type(expr* ret, function_table* f, string funname,
     if (type == thisfunction->output_type) {
       return true;
     } else if (type != 0 && thisfunction->output_type != _void) {
+      if (type == _null && thisfunction->questionmark) {
+        return true;
+      }
       no_return(-1);
     }
   }
-  no_return(-1);
+  return true;
 }
 
 bool Special_Function_Check(call* c, varlist* v) {
@@ -98,7 +101,7 @@ bool Special_Function_Check(call* c, varlist* v) {
     return true;
   } else if (strcmp(s->txt, "floatval") == 0 || strcmp(s->txt, "intval") == 0) {
     if (c->in->next == NULL) {
-      if (c->in->f || c->in->i || c->in->var) {
+      if (c->in->f || c->in->i || c->in->var || c->in->null) {
         if (c->in->var) {
           int type = varlist_get(v, c->in->var);
           if (type == _int || type == _float) {
@@ -151,6 +154,8 @@ bool call_check(call* c, function_table* f, varlist* v) {
           } else {
             incorrect_type_of_argument(-1);
           }
+        } else if (funparams->question_mark) {
+          if (i->null) break;
         }
         incorrect_type_of_argument(-1);
         break;
@@ -163,6 +168,8 @@ bool call_check(call* c, function_table* f, varlist* v) {
           } else {
             incorrect_type_of_argument(-1);
           }
+        } else if (funparams->question_mark) {
+          if (i->null) break;
         }
         incorrect_type_of_argument(-1);
         break;
@@ -175,6 +182,8 @@ bool call_check(call* c, function_table* f, varlist* v) {
           } else {
             incorrect_type_of_argument(-1);
           }
+        } else if (funparams->question_mark) {
+          if (i->null) break;
         }
         incorrect_type_of_argument(-1);
         break;

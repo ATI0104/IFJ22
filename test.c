@@ -15,8 +15,7 @@ int main() {
   function_table* f = NULL;
   function_table_init(&f);
   add_func(&f, m);
-  //if (check_syntax(m, f))
-  if(true)
+  if (check_syntax(m, f))
     eprint("Works!");
   else
     syntaxerror(-1);
