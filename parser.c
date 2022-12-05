@@ -331,8 +331,8 @@ void add_func(function_table** tree, tlist* t) {
               tmp->output_type = _string;
               t = t->next;
             }
-            if (t->t.type == _null) {
-              tmp->output_type = _null;
+            if (t->t.type == _void) {
+              tmp->output_type = _void;
             }
           } else {
             tmp->output_type = _null;
@@ -589,100 +589,6 @@ expr* expression_flip(expr* e) {
   e->next = NULL;
   return result;
 }
-/**
- * @brief Get the resulting type of an expression (should be called after
- * converting the expression to prefix)
- * Inspiration taken from:
- * https://www.geeksforgeeks.org/evaluation-prefix-expressions/
- * @param e expression
- * @param v function's variable table where the expression is located
- * @param f function table
- * @return int expression type
- */
-int get_expression_type(expr* e, var_table* v, function_table* f) {
-  if (e == NULL) return -1;
-  Stack* s;
-  Stack_Init(&s);
-  expr* tmp = expression_flip(e);
-  int pmm[] = {_plus, _minus, _multiply};
-  int in[] = {_int, _null};
-  int ifn[] = {_int, _float, _null};
-  int lglgtn[] = {_lessthan,        _greaterthan, _lessthanoreq,
-                  _greaterthanoreq, _typecheck,   _not_typecheck};
-  while (tmp != NULL) {
-    if (tmp->num) {
-      Stack_Push(&s, _int);
-    } else if (tmp->fl) {
-      Stack_Push(&s, _float);
-    } else if (tmp->str) {
-      Stack_Push(&s, _string);
-    } else if (tmp->var) {
-      var_table* var = var_table_get(&v, *(tmp->var));
-      if (var == NULL) {
-        undefined_variable(-1);
-      }
-      if (var->type == 0) undefined_variable(-1);
-      Stack_Push(&s, v->type);
-    } else if (tmp->func) {
-      function_table* func =
-          function_table_get(&f, *(tmp->func->function_name));
-      if (func == NULL) {
-        function_undefined(-1);
-      }
-      Stack_Push(&s, func->output_type);
-    } else if (tmp->typekeywords) {
-      Stack_Push(&s, *(tmp->typekeywords));
-    } else if (tmp->op) {
-      int first;
-      Stack_Top(s, &first);
-      Stack_Pop(s);
-      int second;
-      Stack_Top(s, &second);
-      Stack_Pop(s);
-      if (isin(*(tmp->op), pmm)) {
-        if (first == _float && isin(second, ifn)) {
-          Stack_Push(&s, _float);
-        } else if (first == _int && isin(second, in)) {
-          Stack_Push(&s, _int);
-        } else if (first == _null && isin(second, ifn)) {
-          if (second != _null)
-            Stack_Push(&s, second);
-          else
-            Stack_Push(&s, _int);
-        } else if (first == _int && second == _float) {
-          Stack_Push(&s, _float);
-        } else {
-          type_mismatch(-1);
-        }
-      } else if (*(tmp->op) == _divide) {
-        if (isin(first, ifn) && isin(second, ifn)) {
-          Stack_Push(&s, _float);
-        } else {
-          type_mismatch(-1);
-        }
-      } else if (isin(*(tmp->op), lglgtn)) {
-        if (first == _string && isin(second, ifn)) {
-          type_mismatch(-1);
-        } else if (second == _string && isin(first, ifn)) {
-          type_mismatch(-1);
-        } else {
-          Stack_Push(&s, _bool);
-        }
-      } else if (*(tmp->op) == _dot) {
-        if (isin(first, ifn) && isin(second, ifn)) {
-          type_mismatch(-1);
-        } else {
-          Stack_Push(&s, _string);
-        }
-      }
-    }
-  }
-  int result;
-  Stack_Top(s, &result);
-  e = expression_flip(e);
-  return result;
-}
-
 void combinevartables(function_table** root) {
   if (root == NULL) return;
   function_table* f = *root;
@@ -814,7 +720,7 @@ code* ConvertToCode(string* fname) {
             fav.t = fav.t->next;
             code* whiletrue = ConvertToCode(fname);
             if (fav.t->t.type == _right_curly_bracket) {
-              code_add(&result, 0, NULL, NULL, whiletrue, e2, NULL, NULL, NULL);
+              code_add(&result, 0, NULL, NULL, whiletrue, e2, NULL, NULL, false);
               fav.t = fav.t->next;
             }
           }
@@ -827,7 +733,7 @@ code* ConvertToCode(string* fname) {
           if (fav.t->t.type == _semicolon) {
             fav.t = fav.t->next;
           }
-          code_add(&result, 0, NULL, NULL, NULL, NULL, NULL, NULL, e3);
+          code_add(&result, 0, NULL, NULL, NULL, e3, NULL, NULL, true);
           break;
         case _identificator:;
           call* c = load_function_call();

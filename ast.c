@@ -48,7 +48,7 @@ void code_init(code** c) {
   *c = NULL;
 }
 void code_add(code** c, int lnum, code* i, code* e, code* loop, expr* exp,
-              call* jmp,string* var, expr* ret) {
+              call* jmp,string* var, bool ret) {
   if (c == NULL) return;
   code* tmp = *c;
   if (*c == NULL) {
@@ -174,39 +174,6 @@ void call_create(call** c, string* f_name, input* in, output* out) {
   tmp->function_name = f_name;
   tmp->in = in;
   tmp->out = out;
-}
-bool call_check(call** c, input_param_list *param){
- int t = 0;
-  call* tmp = *c;
-  if (tmp == NULL) {
-    maloc(*c, sizeof(call));
-    tmp = *c;
-  }
-  while(param!= NULL ){
-    if(t == 1) return false;
-    /*
-    if(strcmp(param->name.txt, tmp->function_name->txt)==0){   //function is found
-        while (param->next!=NULL) {
-          //t=varlist_get(v, tmp->in->var->txt);
-          if (param->type == _int){ //_int
-            if(tmp->in->i==NULL ||  t != _int) return false;
-          }
-          if (param->type == _float){ //_float
-            if(tmp->in->f == NULL|| t != _float) return false;
-          }
-          if (param->type == _string){ //_string
-            if(strcmp(tmp->in->s->txt,"")|| t != _string) return false;
-          }
-          if (param->type == _bool){ //_bool
-            if(tmp->in->null == false || t != _bool) return false;
-          } 
-          param = param->next;
-          tmp->in = tmp->in->next;
-        }*/
-        return true;
-      //}
-  }
-  return false;
 }
 void call_destroy(call** c) {
   if (c == NULL) return;

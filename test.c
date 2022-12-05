@@ -2,6 +2,7 @@
 #include "scanner.h"
 #include "string.h"
 #include "symtable.h"
+#include "semantics.h"
 void expr_print(expr* e, bool postfix);
 void print_vartable(var_table* v);
 int main() {
@@ -24,7 +25,10 @@ int main() {
     eprint("AST is NULL");
     exit(Internal_Error);
   }
-
+  if(Check_AST(ast, f))
+    eprint("AST should be fine!");
+  else
+    eprint("AST bad!");
 #ifdef _skip_prolog_check
   expr* e;
   int c = 0;
@@ -35,8 +39,7 @@ int main() {
   expr_print(e, true);
 #endif
   // Prints out basic informations about the generated tokens
-  token tok;
-  while (m != NULL) {
+  token tok;  while (m != NULL) {
     tok = m->t;
     printf("Token from line %d\n has a type of %d.\n", *(tok.linenum),
            tok.type);

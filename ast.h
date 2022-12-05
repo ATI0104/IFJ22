@@ -30,7 +30,7 @@ typedef struct expr {
   int* op;            // operator (+, -, *, /, <, >, <=, >=, ===, !==,...)
   string* var;        // variable
   call* func;         // function call
-  int* typekeywords;  // type keywords (int,float,string,null)
+  int* typekeywords;  // type keywords (int,float,string,void)
   struct expr* next;
   struct expr* first;
 } expr;
@@ -39,7 +39,7 @@ typedef struct c {
   struct c* i;       // if (cond) {} (cond == expression)
   struct c* e;       // else {}
   struct c* loop;    // while (cond)
-  expr* ret;         // return expression;
+  bool ret;          // return expression;
   string* var;       // variable = expression;
   call* jmp;         // function call with no return value
   expr* expression;  // expression for example 5; or ((5+5)*5);
@@ -66,7 +66,7 @@ typedef struct varlist {
 
 typedef struct my_favorites {
   function_table* f;  // function table
-  var_table* v;         // current local variable state
+  var_table* v;       // current local variable state
   tlist* t;           // token list
   AST* a;             // abstract syntax tree
 } my_favorites;
@@ -75,7 +75,7 @@ void AST_add(AST** a, string* f_name, code* code);
 void AST_destroy(AST** a);
 void code_init(code** c);
 void code_add(code** c, int lnum, code* i, code* e, code* loop, expr* exp,
-              call* jmp, string* var, expr* ret);
+              call* jmp, string* var, bool ret);
 void code_destroy(code** c);
 void expr_init(expr** e);
 void expr_add(expr** e, int type, string* str, int* num, double* fl, int* op,
@@ -86,7 +86,6 @@ void expr_toprefix(expr** e);
 void expr_reverse(expr** e);
 void call_init(call** c);
 void call_create(call** c, string* f_name, input* in, output* out);
-bool call_check(call** c, input_param_list *param);
 void call_destroy(call** c);
 void input_init(input** in);
 void input_add(input** in, int* i, double* f, string* s, string* var);
