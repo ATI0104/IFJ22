@@ -255,7 +255,7 @@ precedencyAnalysisReturn parseExpression(tlist *tok) {
     if (endingFunctionBracket) {
       break;
     }
-    tok->t = tok->next->t;
+    tok = tok->next;
   }
   while (!error) {
     if (stack.first->item == EXPR_NON_TERMINAL &&
