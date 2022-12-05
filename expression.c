@@ -77,14 +77,14 @@ precedencyInput convertTokenTypeToExpressionType(token *tok) {
       return EXPR_ERROR;
   }
 }
-
+/*
 bool endOfExpression(token *tok) {
-  if (tok->type == _EOF || tok->type == _semicolon) {
+  if  {
     return true;
   }
   return false;
 }
-
+*/
 void insertAfter(token *tok) {
   tlist *elem = malloc(sizeof(tlist));
   if (elem == NULL) {
@@ -201,20 +201,21 @@ bool reduce(TStack *stack) {
   return true;
 }
 
-precedencyAnalysisReturn parseExpression(tlist *tokens) {
+precedencyAnalysisReturn parseExpression(tlist *tok) {
   endingFunctionBracket = false;
   bool error = false;
+  //token *tok = tokens->t;
   precedencyAnalysisReturn precedencyOutput;
   exprlist = NULL;
   TStack stack;
   stackInit(&stack);
-  while (!endOfExpression(tokens->t)) {
-    precedencyInput input = convertTokenTypeToExpressionType(tokens->t);
+  while (tok->t.type != _EOF || tok->t.type != _semicolon) {
+    precedencyInput input = convertTokenTypeToExpressionType(&tok->t);
     precedencyInput opOnStack = stackTopTerminal(&stack);
     precendencyOperation op = getOperationFromTable(opOnStack, input);
     if (op == S) {
       stackInsertHandle(&stack);
-      stackPush(&stack, input, tokens->t);
+      stackPush(&stack, input, &tok->t);
     } else if (op == R) {
       while (op == R) {
         if (!reduce(&stack)) {
@@ -226,7 +227,7 @@ precedencyAnalysisReturn parseExpression(tlist *tokens) {
       }
       if (input != EXPR_R_BRACKET) {
         stackInsertHandle(&stack);
-        stackPush(&stack, input, tokens->t);
+        stackPush(&stack, input, &tok->t);
       } else if (input == EXPR_R_BRACKET) {
         while (1) {
           if (stack.first->next->item == EXPR_L_BRACKET &&
@@ -239,11 +240,11 @@ precedencyAnalysisReturn parseExpression(tlist *tokens) {
             break;
           }
         }
-        stackPush(&stack, input, tokens->t);
+        stackPush(&stack, input, &tok->t);
       }
     } else if (op == Q) {
       reduce(&stack);
-      stackPush(&stack, input, tokens->t);
+      stackPush(&stack, input, &tok->t);
     } else if (op == N) {
       if ((input == EXPR_ID && opOnStack == EXPR_ID) ||
           (input == EXPR_ID && opOnStack == EXPR_R_BRACKET)) {
@@ -254,7 +255,7 @@ precedencyAnalysisReturn parseExpression(tlist *tokens) {
     if (endingFunctionBracket) {
       break;
     }
-    tokens->t = tokens->next->t;
+    tok->t = tok->next->t;
   }
   while (!error) {
     if (stack.first->item == EXPR_NON_TERMINAL &&
@@ -266,7 +267,7 @@ precedencyAnalysisReturn parseExpression(tlist *tokens) {
     }
   }
   stackDispose(&stack);
-  precedencyOutput.lastToken = tokens->t;
+  precedencyOutput.lastToken = &tok->t;
   precedencyOutput.ok = !error;
   if (endingFunctionBracket) {
     precedencyOutput.ok = true;
@@ -274,7 +275,7 @@ precedencyAnalysisReturn parseExpression(tlist *tokens) {
   precedencyOutput.tok_list = exprlist;
   return precedencyOutput;
 }
-
+//********EXPRESSION STACK OPERATIONS ******
 void stackInit(TStack *stack) {
   stack->first = NULL;
   stack->totalAmount = 0;
