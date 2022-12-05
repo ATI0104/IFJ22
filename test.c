@@ -31,8 +31,10 @@ int main() {
   }
   if (Check_AST(ast, f))
     eprint("AST should be fine!");
-  else
+  else{
     eprint("AST bad!");
+    exit(Internal_Error);
+  }
 #ifdef _skip_prolog_check
   expr* e;
   int c = 0;

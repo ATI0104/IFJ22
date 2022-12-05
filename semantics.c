@@ -68,6 +68,7 @@ bool Check_code(code* c, function_table* f, var_table* localVars,
     } else if (c->expression) {
       Check_expression(c->expression, f, v);
       c = c->next;
+      continue;
     }
     return false;
   }
@@ -131,7 +132,6 @@ bool Special_Function_Check(call* c, varlist* v) {
   incorrect_number_of_arguments(-1);
 }
 bool call_check(call* c, function_table* f, varlist* v) {
-  if (v == NULL) return false;
   if (c == NULL) return false;
   function_table* calledfunc = function_table_get(&f, *(c->function_name));
   if (calledfunc == NULL) function_undefined(-1);
