@@ -80,19 +80,25 @@ bool check_return_type(expr* ret, function_table* f, string funname,
   function_table* thisfunction = function_table_get(&f, funname);
   if (thisfunction->output_type == 0) {  // m@in
     return true;
-  } else {
-    // Check Expression
-    int type = get_expression_type(ret, v, f);
-    if (type == thisfunction->output_type) {
-      return true;
-    } else if (type != 0 && thisfunction->output_type != _void) {
-      if (type == _null && thisfunction->questionmark) {
-        return true;
-      }
-      no_return(-1);
-    }
   }
-  return true;
+  int type = get_expression_type(ret, v, f);
+  if (thisfunction->output_type == _void) {
+    if (type == -1) {
+      return true;
+    }
+    no_return(-1);
+  } else if (thisfunction->output_type == type) {
+    return true;
+  } else if (thisfunction->questionmark) {
+    if (type == -1) {
+      return true;
+    } else if (type == _null) {
+      return true;
+    }
+  } else if (thisfunction->output_type != _void) {
+    if (type == -1) no_return(-1);
+  }
+  incorrect_type_of_argument(-1);
 }
 
 bool Special_Function_Check(call* c, varlist* v) {
@@ -240,7 +246,6 @@ int get_expression_type(expr* e, varlist* v, function_table* f) {
   Stack* s;
   Stack_Init(&s);
   expr* tmp = e;
-  // tmp = expression_flip(tmp);
   int pmm[] = {_plus, _minus, _multiply, 0};
   int in[] = {_int, _null, 0};
   int ifn[] = {_int, _float, _null, 0};
@@ -251,6 +256,7 @@ int get_expression_type(expr* e, varlist* v, function_table* f) {
                   _typecheck,
                   _not_typecheck,
                   0};
+  int sn[] = {_string, _null, 0};
   while (tmp != NULL) {
     if (tmp->num) {
       Stack_Push(&s, _int);
@@ -310,10 +316,10 @@ int get_expression_type(expr* e, varlist* v, function_table* f) {
           Stack_Push(&s, _bool);
         }
       } else if (*(tmp->op) == _dot) {
-        if (isin(first, ifn) && isin(second, ifn)) {
-          type_mismatch(-1);
-        } else {
+        if (isin(first, sn) && isin(second, sn)) {
           Stack_Push(&s, _string);
+        } else {
+          type_mismatch(-1);
         }
       }
     }
@@ -322,6 +328,5 @@ int get_expression_type(expr* e, varlist* v, function_table* f) {
   int result;
   Stack_Top(s, &result);
   Stack_Destroy(&s);
-  // e = expression_flip(tmp);
   return result;
 }
