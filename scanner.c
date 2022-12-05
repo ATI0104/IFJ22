@@ -483,7 +483,7 @@ token get_token() {
         while (1) {
           c = getc(stdin);
           if (c == '"') {
-            if (word->txt[word->size - 1] == '\\')
+            if (word->txt[word->size - 1] == '\\' && word->txt[word->size - 2] != '\\') 
               ;
             else
               break;
@@ -799,6 +799,9 @@ void slash_decode(string *str) {
         break;
         break;
       default:
+        if (*tmp2 == '$' && *(tmp2 - 1) != '\\') {
+          exit(LEXICAL_ERROR);
+        }
         break;
     }
     ++tmp2;
