@@ -510,8 +510,10 @@ call* load_function_call() {
     fav.t = fav.t->next;
     call* c;
     maloc(c, sizeof(call));
+    c->function_name = &(temp->name);
     input* i;
     maloc(i, sizeof(input));
+    c->in = i;
     input* tmp = i;
     if (fav.t->t.type == _right_parenthesis) {
       free(tmp);
@@ -720,7 +722,8 @@ code* ConvertToCode(string* fname) {
             fav.t = fav.t->next;
             code* whiletrue = ConvertToCode(fname);
             if (fav.t->t.type == _right_curly_bracket) {
-              code_add(&result, 0, NULL, NULL, whiletrue, e2, NULL, NULL, false);
+              code_add(&result, 0, NULL, NULL, whiletrue, e2, NULL, NULL,
+                       false);
               fav.t = fav.t->next;
             }
           }

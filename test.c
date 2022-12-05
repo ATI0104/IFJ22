@@ -1,10 +1,13 @@
 #include "parser.h"
 #include "scanner.h"
+#include "semantics.h"
 #include "string.h"
 #include "symtable.h"
-#include "semantics.h"
+void printcode(code* c);
 void expr_print(expr* e, bool postfix);
 void print_vartable(var_table* v);
+char* printexpression(expr* e);
+void printAST(AST* a);
 int main() {
   tlist* m = create_tlist();
   string a;
@@ -21,11 +24,12 @@ int main() {
   m = move_tokens(m, &mainfunction, &globalvariables);
   print_vartable(globalvariables);
   AST* ast = ConvertToAst(m, mainfunction, globalvariables);
+  printAST(ast);
   if (ast == NULL) {
     eprint("AST is NULL");
     exit(Internal_Error);
   }
-  if(Check_AST(ast, f))
+  if (Check_AST(ast, f))
     eprint("AST should be fine!");
   else
     eprint("AST bad!");
@@ -39,7 +43,8 @@ int main() {
   expr_print(e, true);
 #endif
   // Prints out basic informations about the generated tokens
-  token tok;  while (m != NULL) {
+  token tok;
+  while (m != NULL) {
     tok = m->t;
     printf("Token from line %d\n has a type of %d.\n", *(tok.linenum),
            tok.type);
@@ -52,7 +57,7 @@ int main() {
     if (tok.str != NULL) {
       printf("It's string value = \"%s\"\n", tok.str->txt);
     }
-      m = m->next;
+    m = m->next;
   }
   return 0;
 }
@@ -123,4 +128,73 @@ void print_vartable(var_table* v) {
   printf("name: \"%s\"\n", v->name.txt);
   print_vartable(v->left_var);
   print_vartable(v->right_var);
+}
+
+void printAST(AST* a) {
+  if (a == NULL) return;
+  while (a != NULL) {
+    printf("function: %s\n", a->funname->txt);
+    printcode(a->Code);
+    a = a->next;
+  }
+}
+
+void printcode(code* c) {
+  while (c != NULL) {
+    if (c->i) {
+      printf("if (%s){", printexpression(c->expression));
+      printcode(c->i);
+      printf("}else{\n");
+      printcode(c->e);
+      printf("}\n");
+    } else if (c->loop) {
+      printf("while (%s){", printexpression(c->expression));
+      printcode(c->loop);
+      printf("}\n");
+    } else if (c->jmp) {
+      printf("%s(", c->jmp->function_name->txt);
+      input* in = c->jmp->in;
+      while (in != NULL) {
+        if (in->var) printf("%s,", in->var->txt);
+        if (in->f) printf("%f,", *(in->f));
+        if (in->i) printf("%d,", *(in->i));
+        if (in->s) printf("%s,", in->s->txt);
+        in = in->next;
+      }
+      printf(")\n");
+    } else if (c->var) {
+      printf("%s = %s\n", c->var->txt, printexpression(c->expression));
+    }
+    c = c->next;
+  }
+}
+
+char* printexpression(expr* e) {
+  while (e != NULL) {
+    if (e->func) {
+      printf("%s(", e->func->function_name->txt);
+      input* in = e->func->in;
+      while (in != NULL) {
+        if (in->var) printf("%s,", in->var->txt);
+        if (in->f) printf("%f,", *(in->f));
+        if (in->i) printf("%d,", *(in->i));
+        if (in->s) printf("%s,", in->s->txt);
+        in = in->next;
+      }
+      printf(")");
+    } else if (e->op) {
+      printf("op");
+    } else if (e->var) {
+      printf("%s", e->var->txt);
+    } else if (e->num) {
+      printf("%d", *(e->num));
+    } else if (e->fl) {
+      printf("%f", *(e->fl));
+    } else if (e->str) {
+      printf("%s", e->str->txt);
+    }
+    e = e->next;
+  }
+  printf("\n");
+  return "";
 }

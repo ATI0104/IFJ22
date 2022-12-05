@@ -12,9 +12,21 @@ bool Check_AST(AST* a, function_table* f) {
   }
   return true;
 }
+void loadpredefvars(varlist** v, function_table* f, string funname) {
+  function_table* thisfunction = function_table_get(&f, funname);
+  if (v == NULL) return;
+  if (thisfunction == NULL) return;
+  if (thisfunction->input_type == NULL) return;
+  input_param_list* in = thisfunction->input_type;
+  while (in != NULL) {
+    varlist_set(v, &(in->name), in->type);
+    in = in->next;
+  }
+}
 bool Check_code(code* c, function_table* f, var_table* localVars,
                 string funname) {
   varlist* v = NULL;
+  loadpredefvars(&v, f, funname);
   while (c != NULL) {
     if (c->i) {
       Check_expression(c->expression, f, v);
@@ -251,6 +263,7 @@ int get_expression_type(expr* e, varlist* v, function_table* f) {
         }
       }
     }
+    tmp = tmp->next;
   }
   int result;
   Stack_Top(s, &result);
