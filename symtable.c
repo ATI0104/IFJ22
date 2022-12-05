@@ -282,6 +282,7 @@ void var_table_replace_by_rightmost(var_table *target, var_table **tree) {
     var_table_replace_by_rightmost(target, &(*tree)->right_var);
 }
 input_param_list *insert_top(string name, int type, input_param_list *current) {
+  input_param_list *result = current;
   input_param_list *new_list;
   maloc(new_list, sizeof(input_param_list));
   new_list->name = name;
@@ -294,5 +295,5 @@ input_param_list *insert_top(string name, int type, input_param_list *current) {
     current = current->next;
   }
   current->next = new_list;
-  return current;
+  return result;
 }

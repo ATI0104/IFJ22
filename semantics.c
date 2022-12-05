@@ -4,7 +4,10 @@ bool Check_AST(AST* a, function_table* f) {
   while (a != NULL) {
     {
       function_table* thisfunction = function_table_get(&f, *(a->funname));
-      if (Check_code(a->Code, f, thisfunction->variable, thisfunction->name)) {
+      varlist* v = NULL;
+      loadpredefvars(&v, thisfunction);
+      if (Check_code(a->Code, f, thisfunction->variable, thisfunction->name,
+                     v)) {
         a = a->next;
       } else
         return false;
@@ -12,8 +15,7 @@ bool Check_AST(AST* a, function_table* f) {
   }
   return true;
 }
-void loadpredefvars(varlist** v, function_table* f, string funname) {
-  function_table* thisfunction = function_table_get(&f, funname);
+void loadpredefvars(varlist** v, function_table* thisfunction) {
   if (v == NULL) return;
   if (thisfunction == NULL) return;
   if (thisfunction->input_type == NULL) return;
@@ -24,14 +26,12 @@ void loadpredefvars(varlist** v, function_table* f, string funname) {
   }
 }
 bool Check_code(code* c, function_table* f, var_table* localVars,
-                string funname) {
-  varlist* v = NULL;
-  loadpredefvars(&v, f, funname);
+                string funname, varlist* v) {
   while (c != NULL) {
     if (c->i) {
       Check_expression(c->expression, f, v);
-      if (Check_code(c->i, f, localVars, funname)) {
-        if (Check_code(c->e, f, localVars, funname)) {
+      if (Check_code(c->i, f, localVars, funname, v)) {
+        if (Check_code(c->e, f, localVars, funname, v)) {
           c = c->next;
           continue;
         } else
@@ -40,7 +40,7 @@ bool Check_code(code* c, function_table* f, var_table* localVars,
       return false;
     } else if (c->loop) {
       Check_expression(c->expression, f, v);
-      if (Check_code(c->loop, f, localVars, funname)) {
+      if (Check_code(c->loop, f, localVars, funname, v)) {
         c = c->next;
         continue;
       }
@@ -91,6 +91,45 @@ bool check_return_type(expr* ret, function_table* f, string funname,
   no_return(-1);
 }
 
+bool Special_Function_Check(call* c, varlist* v) {
+  string* s = c->function_name;
+  if (strcmp(s->txt, "write") == 0) {
+    return true;
+  } else if (strcmp(s->txt, "floatval") == 0 || strcmp(s->txt, "intval") == 0) {
+    if (c->in->next == NULL) {
+      if (c->in->f || c->in->i || c->in->var) {
+        if (c->in->var) {
+          int type = varlist_get(v, c->in->var);
+          if (type == _int || type == _float) {
+            return true;
+          } else {
+            incorrect_type_of_argument(-1);
+          }
+        }
+        return true;
+      }
+    } else {
+      incorrect_number_of_arguments(-1);
+    }
+  } else if (strcmp(s->txt, "strval") == 0) {
+    if (c->in->next == NULL) {
+      if (c->in->null || c->in->s || c->in->var) {
+        if (c->in->var) {
+          int type = varlist_get(v, c->in->var);
+          if (type == _string || type == _null) {
+            return true;
+          } else {
+            incorrect_type_of_argument(-1);
+          }
+        }
+        return true;
+      }
+    } else {
+      incorrect_number_of_arguments(-1);
+    }
+  }
+  incorrect_number_of_arguments(-1);
+}
 bool call_check(call* c, function_table* f, varlist* v) {
   if (v == NULL) return false;
   if (c == NULL) return false;
@@ -100,7 +139,7 @@ bool call_check(call* c, function_table* f, varlist* v) {
   input_param_list* funparams = calledfunc->input_type;
   while (i != NULL) {
     if (funparams == NULL) {
-      incorrect_number_of_arguments(-1);
+      return Special_Function_Check(c, v);
     }
     switch (funparams->type) {
       case _int:
@@ -181,7 +220,7 @@ void Check_expression(expr* e, function_table* f, varlist* v) {
  * @brief Get the resulting type of an expression (should be called after
  * converting the expression to prefix)
  * Inspiration taken from:
- * https://www.geeksforgeeks.org/evaluation-prefix-expressions/
+ * https://www.geeksforgeeks.org/stack-set-4-evaluation-postfix-expression/
  * @param e expression
  * @param v function's variable table where the expression is located
  * @param f function table
@@ -191,12 +230,18 @@ int get_expression_type(expr* e, varlist* v, function_table* f) {
   if (e == NULL) return -1;
   Stack* s;
   Stack_Init(&s);
-  expr* tmp = expression_flip(e);
-  int pmm[] = {_plus, _minus, _multiply};
-  int in[] = {_int, _null};
-  int ifn[] = {_int, _float, _null};
-  int lglgtn[] = {_lessthan,        _greaterthan, _lessthanoreq,
-                  _greaterthanoreq, _typecheck,   _not_typecheck};
+  expr* tmp = e;
+  // tmp = expression_flip(tmp);
+  int pmm[] = {_plus, _minus, _multiply, 0};
+  int in[] = {_int, _null, 0};
+  int ifn[] = {_int, _float, _null, 0};
+  int lglgtn[] = {_lessthan,
+                  _greaterthan,
+                  _lessthanoreq,
+                  _greaterthanoreq,
+                  _typecheck,
+                  _not_typecheck,
+                  0};
   while (tmp != NULL) {
     if (tmp->num) {
       Stack_Push(&s, _int);
@@ -209,7 +254,7 @@ int get_expression_type(expr* e, varlist* v, function_table* f) {
       if (var == 0) {
         undefined_variable(-1);
       }
-      Stack_Push(&s, v->current_type);
+      Stack_Push(&s, var);
     } else if (tmp->func) {
       function_table* func =
           function_table_get(&f, *(tmp->func->function_name));
@@ -267,6 +312,7 @@ int get_expression_type(expr* e, varlist* v, function_table* f) {
   }
   int result;
   Stack_Top(s, &result);
-  e = expression_flip(e);
+  Stack_Destroy(&s);
+  // e = expression_flip(tmp);
   return result;
 }

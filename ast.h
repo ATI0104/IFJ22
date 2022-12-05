@@ -13,7 +13,7 @@ typedef struct input {
   double* f;    // constant decimal number or negative integer
   string* s;    // constant string
   string* var;  // variable
-  bool null;    // null
+  bool* null;   // null
   struct input* first;
   struct input* next;
 } input;

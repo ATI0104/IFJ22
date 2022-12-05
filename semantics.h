@@ -6,9 +6,12 @@
 #include "stack.h"
 #include "string.h"
 #include "symtable.h"
+
+
 bool Check_AST(AST* a, function_table* f);
+void loadpredefvars(varlist** v, function_table* thisfunction);
 bool Check_code(code* c, function_table* f, var_table* localVars,
-                string funname);
+                string funname, varlist* v);
 bool check_return_type(expr* ret, function_table* f, string funname,
                        varlist* v);
 int get_expression_type(expr* e, varlist* v, function_table* f);

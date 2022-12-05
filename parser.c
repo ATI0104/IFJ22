@@ -268,16 +268,17 @@ input_param_list* load_input_params(tlist* t, int* skip) {
         *skip = *skip + 1;
         if (t->t.type == _variable) {
           tmp->name = *(t->t.str);
-          *skip = *skip + 1;
           t = t->next;
+          *skip = *skip + 1;
         } else {
           eprint("Error: Expected variable name after string\n");
           syntaxerror(*(t->t.linenum));
         }
         break;
       case _null:
-
         tmp->type = _null;
+        t = t->next;
+        *skip = *skip + 1;
         break;
       default:
         eprint("Error: Expected type after comma\n");
@@ -288,7 +289,6 @@ input_param_list* load_input_params(tlist* t, int* skip) {
       maloc(tmp->next, sizeof(input_param_list));
       tmp = tmp->next;
     }
-    *skip = *skip + 1;
   }
   if (*skip == 0) {  // no input params
     free(l);
@@ -314,6 +314,7 @@ void add_func(function_table** tree, tlist* t) {
             t = t->next;
             skip--;
           }
+          if (t->t.type == _right_parenthesis) t = t->next;
           if (t->t.type == _colon) {
             t = t->next;
             if (t->t.type == _question_mark)
@@ -518,6 +519,7 @@ call* load_function_call() {
     if (fav.t->t.type == _right_parenthesis) {
       free(tmp);
       c->function_name = &(temp->name);
+      c->in = NULL;
       return c;
     }
     while (fav.t->t.type != _right_parenthesis) {
@@ -556,7 +558,8 @@ call* load_function_call() {
           continue;
           break;
         case _null:
-          tmp->null = true;
+          maloc(tmp->null, sizeof(bool));
+
           maloc(tmp->next, sizeof(input));
           tmp = tmp->next;
           fav.t = fav.t->next;
@@ -571,6 +574,13 @@ call* load_function_call() {
           break;
       }
     }
+    tmp = i;
+    while (tmp->next->next != NULL) {
+      tmp = tmp->next;
+    }
+    input* empty = tmp->next;
+    tmp->next = NULL;
+    free(empty);
     return c;
   }
   return NULL;
@@ -613,7 +623,7 @@ void combinevartables(function_table** root) {
 
 bool isin(int i, int l[]) {
   int j = 0;
-  while (l != NULL) {
+  while (l[j] != 0) {
     if (i == l[j]) return true;
     j++;
   }
