@@ -220,6 +220,7 @@ bool call_check(call* c, function_table* f, varlist* v) {
 }
 
 void Check_expression(expr* e, function_table* f, varlist* v) {
+  get_expression_type(e, v, f);
   while (e != NULL) {
     if (e->var) {
       if (varlist_get(v, e->var) == 0) {

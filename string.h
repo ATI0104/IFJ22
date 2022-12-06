@@ -20,4 +20,5 @@ void string_appendc(string* str, char c);
 bool is_empty(string* str);
 void string_deletelast(string* str);
 void string_deletefirst(string* str);
+void string_inttostr(string* s, int i);
 #endif

@@ -3,7 +3,7 @@
 
 /**
  * @brief Counts the number of characters in a string
- * 
+ *
  * @param txt  String to count characters in
  * @return int Number of characters in the string
  */
@@ -17,7 +17,7 @@ int strcnt(char* txt) {
 }
 /**
  * @brief Copies a string to another string
- * 
+ *
  * @param dest destination string
  * @param src source string
  */
@@ -32,7 +32,7 @@ void mystrcpy(char* dest, char* src) {
 }
 /**
  * @brief Initializes the string structure
- * 
+ *
  * @param str String to initialize
  */
 void string_init(string* str) {
@@ -42,7 +42,7 @@ void string_init(string* str) {
 
 /**
  * @brief Sets the string to a given value
- * 
+ *
  * @param str String to set
  * @param txt value to set the string to
  */
@@ -55,7 +55,7 @@ void string_set(string* str, char* txt) {
 }
 /**
  * @brief Destroys the string structure
- * 
+ *
  * @param str String to destroy
  */
 void string_destroy(string* str) {
@@ -66,7 +66,7 @@ void string_destroy(string* str) {
 }
 /**
  * @brief Append a string to another string
- * 
+ *
  * @param str String to append to
  * @param txt string to append
  */
@@ -87,7 +87,7 @@ void string_append(string* str, char* txt) {
 }
 /**
  * @brief Append a character to a string
- * 
+ *
  * @param str String to append to
  * @param c Character to append
  */
@@ -99,7 +99,7 @@ void string_appendc(string* str, char c) {
 }
 /**
  * @brief Checks if a string is empty
- * 
+ *
  * @param str string to check
  * @return true the string is empty
  * @return false the string is not empty
@@ -111,8 +111,8 @@ bool is_empty(string* str) {
 }
 /**
  * @brief Delete the last character of a string
- * 
- * @param str 
+ *
+ * @param str
  */
 void string_deletelast(string* str) {
   if (str == NULL) return;
@@ -131,8 +131,8 @@ void string_deletelast(string* str) {
 }
 /**
  * @brief Delete the first character of a string
- * 
- * @param str 
+ *
+ * @param str
  */
 void string_deletefirst(string* str) {
   if (str == NULL) return;
@@ -152,3 +152,11 @@ void string_deletefirst(string* str) {
   string_destroy(str);
 }
 
+void string_inttostr(string* s, int i) {
+  string_set(s, "");
+  while (i != 0) {
+    string_appendc(s, i % 10);
+    i /= 10;
+  }
+  string_appendc(s, '-');
+}
