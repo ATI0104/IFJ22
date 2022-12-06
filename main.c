@@ -12,7 +12,8 @@ int main(int argc, char* argv[]) {
         "Help:\n This a program which takes IFJ22 code(PHP derivative) and "
         "converts it to IFJcode22.\n This program reads from the standard "
         "input and writes to the standard output, so no input arguments are "
-        "needed.\n Usage: \"./ifj22 < inputfile > outputfile\"\n");
+        "needed.\n Usage: \"%s < inputfile > outputfile\"\n",
+        argv[0]);
     exit(0);
   }
   // Reading in the input and converting it to tokens then these tokens are
@@ -35,7 +36,7 @@ int main(int argc, char* argv[]) {
     // Checking the semantics of the abstract syntax tree
     if (Check_AST(abstractsyntaxtree, f)) {
       // Generating IFJcode22
-      generate(abstractsyntaxtree, f);
+      //generate(abstractsyntaxtree, f);
     } else {
       semantic_error(-1, "");
     }

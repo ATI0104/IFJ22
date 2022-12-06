@@ -4,17 +4,43 @@ my_favorites fav;
 int count = 0;
 void generate(AST* a, function_table* f) {
   printf(".IFJcode22\n");
+  generate_exit_codes();
+  prinf("DEFVAR GF@-_-returnvalue");
   while (strcmp(a->funname->txt, "m@in") != 0) {
     a = a->next;
   }
+  define_variables(function_table_get(f, *a->funname));
   generate_code(a->Code, f, NULL, true, NULL);
   a = a->first;
   while (strcmp(a->funname->txt, "m@in") != 0) {
+    define_variables(function_table_get(f, *a->funname));
     generate_code(a->Code, f, a->funname, true, NULL);
     a = a->next;
   }
 }
-
+void generate_exit_codes() {
+  printf("LABEL -_-exit3");
+  printf("EXIT int@3");
+  printf("LABEL -_-exit4");
+  printf("EXIT int@4");
+  printf("LABEL -_-exit5");
+  printf("EXIT int@5");
+  printf("LABEL -_-exit6");
+  printf("EXIT int@6");
+  printf("LABEL -_-exit7");
+  printf("EXIT int@7");
+  printf("LABEL -_-exit8");
+  printf("EXIT int@8");
+}
+void define_variables(function_table* f) { rec_define_variables(f->variable); }
+void rec_define_variables(var_table* v) {
+  if (v == NULL) {
+    return;
+  }
+  rec_define_variables(v->left_var);
+  rec_define_variables(v->right_var);
+  printf("DEFVAR LF@%s\n", v->name.txt);
+}
 void generate_code(code* c, function_table* f, string* name, bool newfunction,
                    varlist* localvars) {
   varlist* v;
@@ -96,7 +122,6 @@ void generate_while(code* loop, expr* e, function_table* f,
 
 void generate_assignment(string* var, expr* e, function_table* f,
                          string* functionname, varlist** v) {
-  printf("DEFVAR LF@%s", var->txt);
   int type = evaluate_expression(e, f, functionname, *v, var);
   varlist_set(v, var, type);
 }
@@ -112,12 +137,12 @@ void generate_return(expr* e, function_table* f, string* functionname,
     printf("EXIT int@0");
     return;
   }
+
   evaluate_expression(e, f, functionname, v, &countstr);
-  printf("CLEAR");
-  printf("PUSH LF@%s", countstr.txt);
+  printf("MOVE GF@-_-returnvalue LF@%s", countstr.txt);
   printf("RETURN");
 }
-
+// TODO Improve this
 int evaluate_expression(expr* e, function_table* f, string* functionname,
                         varlist* v, string* tovar) {
   Stack* s;
@@ -136,23 +161,23 @@ int evaluate_expression(expr* e, function_table* f, string* functionname,
       int type = varlist_get(v, e->var);
       switch (type) {
         case _int:
-          printf("PUSHS LF@%s\n", e->var->txt);
+          printf("PUSHS int@%s\n", e->var->txt);
           Stack_Push(&s, _int);
           break;
         case _float:
-          printf("PUSHS LF@%s\n", e->var->txt);
+          printf("PUSHS float@%s\n", e->var->txt);
           Stack_Push(&s, _float);
           break;
         case _string:
-          printf("PUSHS LF@%s\n", e->var->txt);
+          printf("PUSHS string@%s\n", e->var->txt);
           Stack_Push(&s, _string);
           break;
         case _void:
-          printf("PUSHS LF@%s\n", e->var->txt);
+          printf("PUSHS nil@nil\n", e->var->txt);
           Stack_Push(&s, _null);
           break;
         case _bool:
-          printf("PUSHS LF@%s\n", e->var->txt);
+          printf("PUSHS bool@bool\n", e->var->txt);
           Stack_Push(&s, _bool);
           break;
         default:
