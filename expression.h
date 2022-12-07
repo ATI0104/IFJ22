@@ -7,15 +7,16 @@
 #include "scanner.h"
 #include "stack.h"
 
-typedef enum {  // Don't change the order of the elements !!!
+typedef enum {  
   EXPR_PLUS_MINUS,
   EXPR_MULDIV,
   EXPR_CONCAT,
   EXPR_REL,
   EXPR_L_BRACKET,
   EXPR_R_BRACKET,
-  EXPR_ID,  // Identifier, string, number
+  EXPR_ID,  // Identifier, string, number ...
   EXPR_DOLLAR,
+  EXPR_STRLEN,
   EXPR_NON_TERMINAL,
   EXPR_HANDLE,
   EXPR_ERROR
@@ -28,15 +29,10 @@ typedef enum {
   N   // error
 } precendencyOperation;
 
-typedef struct {
-  bool ok;
-  tlist *tok_list;
-  token *lastToken;
-} precedencyAnalysisReturn;
 
 typedef struct stackIt {
   precedencyInput item;
-  token *tok;
+  expr *exp;
   struct stackIt *next;
 } StackItem;
 
@@ -60,7 +56,7 @@ void stackInit(TStack *stack);
  * @param input Value to push
  * @param tok Current token to store
  */
-void stackPush(TStack *stack, precedencyInput input, token *tok);
+void stackPush(TStack *stack, precedencyInput input, expr *exp);
 
 /**
  * @brief Pops an element from stack
@@ -100,13 +96,12 @@ void deleteNearestItem(TStack *stack, precedencyInput item);
  */
 void stackDispose(TStack *stack);
 
-precendencyOperation getOperationFromTable(precedencyInput onStack,
-                                           precedencyInput onInput);
-precedencyInput convertTokenTypeToExpressionType(token *tok);
-bool endOfExpression(token *tok);
-void insertAfter(token *tok);
+precendencyOperation getOperationFromTable(precedencyInput onStack, precedencyInput onInput);
+precedencyInput convertTokenTypeToExpressionType(expr *exp);
+bool endOfExpression(expr *exp);
+void insertAfter(expr *exp);
 bool reduceDyadicOperation(TStack *stack, StackItem **possibleRule);
 bool reduceIdentifier(TStack *stack, StackItem **possibleRule);
 bool reduce(TStack *stack);
-precedencyAnalysisReturn parseExpression(tlist *tok);
+bool parseExpression(expr *exp);
 #endif
