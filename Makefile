@@ -1,7 +1,7 @@
-CFLAGS= -g -Wall -Werror -pedantic -Wunreachable-code -Wextra   #-fsanitize=address #-O2
+CFLAGS= -g #-Wall -Werror -pedantic -Wunreachable-code -Wextra   #-fsanitize=address #-O2
 CC=gcc
 RM=rm -f
-FILES=scanner.c string.c symtable.c parser.c stack.c ast.c semantics.c expression.c main.c
+FILES=scanner.c string.c symtable.c parser.c stack.c ast.c semantics.c expression.c main.c generator.c
 all: $(FILES)
 	$(CC) $(CFLAGS) -o ifj22 $(FILES) -lm 
 debug: #skips prolog check

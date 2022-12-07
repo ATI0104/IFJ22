@@ -250,13 +250,9 @@ int get_expression_type(expr* e, varlist* v, function_table* f) {
   int pmm[] = {_plus, _minus, _multiply, 0};
   int in[] = {_int, _null, 0};
   int ifn[] = {_int, _float, _null, 0};
-  int lglgtn[] = {_lessthan,
-                  _greaterthan,
-                  _lessthanoreq,
-                  _greaterthanoreq,
-                  _typecheck,
-                  _not_typecheck,
-                  0};
+  int infl[] = {_int, _float, 0};
+  int lglg[] = {_lessthan, _greaterthan, _lessthanoreq, _greaterthanoreq, 0};
+  int tnt[] = {_typecheck, _not_typecheck, 0};
   int sn[] = {_string, _null, 0};
   while (tmp != NULL) {
     if (tmp->num) {
@@ -308,10 +304,10 @@ int get_expression_type(expr* e, varlist* v, function_table* f) {
         } else {
           type_mismatch(-1);
         }
-      } else if (isin(*(tmp->op), lglgtn)) {
-        if (first == _string && isin(second, ifn)) {
+      } else if (isin(*(tmp->op), lglg)) {
+        if (first == _string && isin(second, infl)) {
           type_mismatch(-1);
-        } else if (second == _string && isin(first, ifn)) {
+        } else if (second == _string && isin(first, infl)) {
           type_mismatch(-1);
         } else {
           Stack_Push(&s, _bool);
@@ -322,6 +318,8 @@ int get_expression_type(expr* e, varlist* v, function_table* f) {
         } else {
           type_mismatch(-1);
         }
+      } else if (isin(*(tmp->op), tnt)) {
+        Stack_Push(&s, _bool);
       }
     }
     tmp = tmp->next;

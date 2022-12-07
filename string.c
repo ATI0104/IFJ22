@@ -153,10 +153,10 @@ void string_deletefirst(string* str) {
 }
 
 void string_inttostr(string* s, int i) {
-  string_set(s, "");
+  const char* digits = "0123456789";
+  string_set(s, "-");
   while (i != 0) {
-    string_appendc(s, i % 10);
+    string_appendc(s, digits[i % 10]);
     i /= 10;
   }
-  string_appendc(s, '-');
 }
