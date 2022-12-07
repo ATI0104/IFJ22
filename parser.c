@@ -1,3 +1,8 @@
+/**
+  * Implementace překladače imperativního jazyka IFJ22
+  * @author Attila Kovács (xkovac60)
+  * @file parser.c
+*/
 #include "parser.h"
 my_favorites fav;  //♥ This is the only global variable in the program let's
                    // keep it that way :)
