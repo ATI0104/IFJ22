@@ -1,5 +1,9 @@
+/**
+  * Implementace překladače imperativního jazyka IFJ22
+  * @author Attila Kovács (xkovac60)
+  * @file string.c
+*/
 #include "string.h"
-// TODO check for memory leaks
 
 /**
  * @brief Counts the number of characters in a string
