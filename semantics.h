@@ -1,3 +1,8 @@
+/**
+  * Implementace překladače imperativního jazyka IFJ22
+  * @author Attila Kovács (xkovac60)
+  * @file semantics.h
+*/
 #ifndef _semantics
 #define _semantics
 #include "ast.h"
