@@ -10,8 +10,7 @@ bool endingFunctionBracket = false;
 
 const precendencyOperation table[16][16] = {
 
-    //|+-|*/|.| r | (| )| i| $ | Input        r - relational operators (<, <=,
-    //>, >=, ===, !==)
+    //|+-|*/|.| r | (| )| i| $ | Input        r - relational operators (<, <=, >, >=, ===, !==)
 
     //                             Stack
     {R, S, R, R, S, R, S, R},  // +-
@@ -23,9 +22,8 @@ const precendencyOperation table[16][16] = {
     {R, R, R, R, N, R, N, R},  // i
     {S, S, S, S, S, N, S, N},  // $
 };
-
-precendencyOperation getOperationFromTable(precedencyInput onStack,
-                                           precedencyInput onInput) {
+//Returns operation from the table. onStack = row, onInput = column
+precendencyOperation getOperationFromTable(precedencyInput onStack, precedencyInput onInput) {
   if (onStack == EXPR_NON_TERMINAL || onStack == EXPR_HANDLE ||
       onStack == EXPR_ERROR || onInput == EXPR_NON_TERMINAL ||
       onInput == EXPR_HANDLE || onInput == EXPR_ERROR) {
@@ -34,7 +32,7 @@ precendencyOperation getOperationFromTable(precedencyInput onStack,
     return table[onStack][onInput];
   }
 }
-
+//returns name of the column in the table based on the type of expression
 precedencyInput GetExpressionType(expr *exp) {
 if(exp->op){
   if(*exp->op == _plus || *exp->op == _minus){
@@ -61,7 +59,7 @@ if(exp->op){
   }
 return EXPR_ERROR;
 }
-
+//Inserts item to the global expression list
 void insertAfter(expr *exp) {
   expr *elem;
    maloc(elem, sizeof(expr));
@@ -80,8 +78,8 @@ void insertAfter(expr *exp) {
     tmp->next = elem;
   }
 }
-
-bool reduceDyadicOperation(TStack *stack,
+//reduces stack ( operation R)
+bool reduceOperation(TStack *stack,
                            StackItem **possibleRule) {  //(a+b, a*b, (a), ...)
   if (possibleRule[0]->item == EXPR_R_BRACKET &&
       possibleRule[1]->item == EXPR_NON_TERMINAL &&
@@ -127,7 +125,7 @@ bool reduceDyadicOperation(TStack *stack,
     return false;
   }
 }
-
+//Reduces identifiers (R)
 bool reduceIdentifier(TStack *stack, StackItem **possibleRule) {
   if (possibleRule[0]->item == EXPR_ID ||
       possibleRule[0]->item == EXPR_NON_TERMINAL) {
@@ -148,7 +146,7 @@ bool reduceIdentifier(TStack *stack, StackItem **possibleRule) {
   }
   return true;
 }
-
+// Reduces stack
 bool reduce(TStack *stack) {
   int terminalsBeforeHandle = 0;
   StackItem *possibleRule[3];
@@ -171,14 +169,14 @@ bool reduce(TStack *stack) {
     if (!reduceIdentifier(stack, possibleRulePointer)) {
       return false;
     }
-  } else if (terminalsBeforeHandle == 3) {
-    if (!reduceDyadicOperation(stack, possibleRulePointer)) {
+  } else if (terminalsBeforeHandle == 3) { //operation are reduces (a+b, ...)
+    if (!reduceOperation(stack, possibleRulePointer)) {
       return false;
     }
   }
   return true;
 }
-
+//Parses expression 
 bool parseExpression(expr *exp) {
   endingFunctionBracket = false;
   bool error = false;
@@ -190,6 +188,7 @@ bool parseExpression(expr *exp) {
     precedencyInput input = GetExpressionType(exp);
     precedencyInput opOnStack = stackTopTerminal(&stack);
     precendencyOperation op = getOperationFromTable(opOnStack, input);
+   //decides based on the rule got from the prec.table
     if (op == S) {
       stackInsertHandle(&stack);
       stackPush(&stack, input, exp);
