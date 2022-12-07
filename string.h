@@ -1,4 +1,8 @@
-
+/**
+  * Implementace překladače imperativního jazyka IFJ22
+  * @author Attila Kovács (xkovac60)
+  * @file string.h
+*/
 #ifndef mydynamicstring
 #include <stdbool.h>
 #include <stdio.h>
