@@ -1,4 +1,4 @@
-CFLAGS= -g -Wall -Werror -pedantic -Wunreachable-code -Wextra   #-fsanitize=address #-O2
+CFLAGS= #-g -Wall -Werror -pedantic -Wunreachable-code -Wextra
 CC=gcc
 RM=rm -f
 FILES=scanner.c string.c symtable.c parser.c stack.c ast.c semantics.c expression.c main.c generator.c
