@@ -1,3 +1,8 @@
+/**
+  * Implementace překladače imperativního jazyka IFJ22
+  * @author Attila Kovács (xkovac60)
+  * @file generator.h
+*/
 #ifndef _generator_h
 #define _generator_h
 #include "ast.h"
