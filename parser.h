@@ -1,4 +1,8 @@
-
+/**
+  * Implementace překladače imperativního jazyka IFJ22
+  * @author Attila Kovács (xkovac60)
+  * @file parser.h
+*/
 #ifndef _parser
 #define _parser
 #include <math.h>
