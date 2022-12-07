@@ -1,3 +1,8 @@
+/**
+  * Implementace překladače imperativního jazyka IFJ22
+  * @author Anna Udvaros (xudvar02)
+  * @file expression.c
+*/
 #ifndef _expression
 #define _expression
 
