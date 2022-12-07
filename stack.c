@@ -1,3 +1,8 @@
+/**
+  * Implementace překladače imperativního jazyka IFJ22
+  * @author Attila Kovács (xkovac60)
+  * @file stack.c
+*/
 #include "stack.h"
 //Heavy inspiration taken from my IAL project
 void Stack_Init(Stack** stack) {
