@@ -203,58 +203,63 @@ void evaluate_expression(expr* e, function_table* f, string* functionname,
           printf("POPS GF@-_-1st\n");
           printf("TYPE GF@-_-1stt GF@-_-1st\n");
           printf("TYPE GF@-_-2ndt GF@-_-2nd\n");
-          printf("JUMPIFEQ firstisint%s GF@-_-1stt string@int\n", countstr);
-          printf("JUMPIFEQ firstisfloat%s GF@-_-1stt string@float\n", countstr);
-          printf("JUMPIFEQ firstisnil%s GF@-_-1stt string@nil\n", countstr);
+          printf("JUMPIFEQ firstisint%s GF@-_-1stt string@int\n", countstr.txt);
+          printf("JUMPIFEQ firstisfloat%s GF@-_-1stt string@float\n",
+                 countstr.txt);
+          printf("JUMPIFEQ firstisnil%s GF@-_-1stt string@nil\n", countstr.txt);
           printf("JMP -_-exit7\n");
 
-          printf("LABEL firstisint%s\n", countstr);
-          printf("JUMPIFEQ calculate%s GF@-_-2ndt string@int\n", countstr);
-          printf("JUMPIFEQ firsttofloat%s GF@-_-2ndt string@float\n", countstr);
-          printf("JUMPIFEQ first%s GF@-_-2ndt string@nil\n", countstr);
+          printf("LABEL firstisint%s\n", countstr.txt);
+          printf("JUMPIFEQ calculate%s GF@-_-2ndt string@int\n", countstr.txt);
+          printf("JUMPIFEQ firsttofloat%s GF@-_-2ndt string@float\n",
+                 countstr.txt);
+          printf("JUMPIFEQ first%s GF@-_-2ndt string@nil\n", countstr.txt);
           printf("JUMP -_-exit7\n");
-          printf("LABEL firstisfloat%s\n", countstr);
+          printf("LABEL firstisfloat%s\n", countstr.txt);
 
-          printf("JUMPIFEQ calculate%s GF@-_-2ndt string@float\n", countstr);
-          printf("JUMPIFEQ secondtofloat%s GF@-_-2ndt string@int\n", countstr);
-          printf("JUMPIFEQ secondisnil%s GF@-_-2ndt string@nil\n", countstr);
-          printf("JUMP -_-exit7\n");
-
-          printf("LABEL firstisnil%s\n", countstr);
-          printf("JUMPIFEQ zero%s GF@-_-2ndt string@nil\n", countstr);
-          printf("JUMPIFEQ second%s GF@-_-2ndt string@int\n", countstr);
-          printf("JUMPIFEQ second%s GF@-_-2ndt string@float\n", countstr);
+          printf("JUMPIFEQ calculate%s GF@-_-2ndt string@float\n",
+                 countstr.txt);
+          printf("JUMPIFEQ secondtofloat%s GF@-_-2ndt string@int\n",
+                 countstr.txt);
+          printf("JUMPIFEQ secondisnil%s GF@-_-2ndt string@nil\n",
+                 countstr.txt);
           printf("JUMP -_-exit7\n");
 
-          printf("LABEL firsttofloat%s\n", countstr);
+          printf("LABEL firstisnil%s\n", countstr.txt);
+          printf("JUMPIFEQ zero%s GF@-_-2ndt string@nil\n", countstr.txt);
+          printf("JUMPIFEQ second%s GF@-_-2ndt string@int\n", countstr.txt);
+          printf("JUMPIFEQ second%s GF@-_-2ndt string@float\n", countstr.txt);
+          printf("JUMP -_-exit7\n");
+
+          printf("LABEL firsttofloat%s\n", countstr.txt);
           printf("INT2FLOAT GF@-_-1st GF@-_-1st\n");
-          printf("JUMP calculate%s\n", countstr);
+          printf("JUMP calculate%s\n", countstr.txt);
 
-          printf("LABEL secondtofloat%s\n", countstr);
+          printf("LABEL secondtofloat%s\n", countstr.txt);
           printf("INT2FLOAT GF@-_-2nd GF@-_-2nd\n");
-          printf("JUMP calculate%s\n", countstr);
+          printf("JUMP calculate%s\n", countstr.txt);
 
-          printf("LABEL secondisnil%s\n", countstr);
-          printf("JUMP -_-first%s\n", countstr);
+          printf("LABEL secondisnil%s\n", countstr.txt);
+          printf("JUMP -_-first%s\n", countstr.txt);
 
-          printf("LABEL calculate%s\n", countstr);
+          printf("LABEL calculate%s\n", countstr.txt);
           if (*e->op == _plus) printf("ADD GF@-_-1st GF@-_-1st GF@-_-2nd\n");
           if (*e->op == _minus) printf("SUB GF@-_-1st GF@-_-1st GF@-_-2nd\n");
           if (*e->op == _multiply)
             printf("MUL GF@-_-1st GF@-_-1st GF@-_-2nd\n");
           if (*e->op == _divide) printf("DIV GF@-_-1st GF@-_-1st GF@-_-2nd\n");
           printf("PUSHS GF@-_-1st\n");
-          printf("JUMP -_-finish%s\n", countstr);
+          printf("JUMP -_-finish%s\n", countstr.txt);
 
-          printf("LABEL second%s", countstr);
+          printf("LABEL second%s", countstr.txt);
           printf("PUSHS GF@-_-2nd\n");
-          printf("JUMP -_-finish%s\n", countstr);
+          printf("JUMP -_-finish%s\n", countstr.txt);
 
-          printf("LABEL first%s\n", countstr);
+          printf("LABEL first%s\n", countstr.txt);
           printf("PUSHS GF@-_-1st\n");
-          printf("JUMP -_-finish%s\n", countstr);
+          printf("JUMP -_-finish%s\n", countstr.txt);
 
-          printf("LABEL -_-finish%s\n", countstr);
+          printf("LABEL -_-finish%s\n", countstr.txt);
           counter -= 1;
           break;
         case _dot:  // sn
@@ -263,39 +268,40 @@ void evaluate_expression(expr* e, function_table* f, string* functionname,
           printf("TYPE GF@-_-1stt GF@-_-1st\n");
           printf("TYPE GF@-_-2ndt GF@-_-2nd\n");
 
-          printf("JUMPIFEQ firstisnil%s GF@-_-1stt string@nil\n", countstr);
+          printf("JUMPIFEQ firstisnil%s GF@-_-1stt string@nil\n", countstr.txt);
           printf("JUMPIFEQ firstisstring%s GF@-_-2ndt string@string\n",
-                 countstr);
+                 countstr.txt);
           printf("JUMP -_-exit7\n");
 
-          printf("LABEL firstisnil%s\n", countstr);
-          printf("JUMPIFEQ empty%s GF@-_-2ndt string@nil\n", countstr);
-          printf("JUMPIFEQ second%s GF@-_-2ndt string@string\n", countstr);
+          printf("LABEL firstisnil%s\n", countstr.txt);
+          printf("JUMPIFEQ empty%s GF@-_-2ndt string@nil\n", countstr.txt);
+          printf("JUMPIFEQ second%s GF@-_-2ndt string@string\n", countstr.txt);
           printf("JUMP -_-exit7\n");
 
-          printf("LABEL firstisstring%s\n", countstr);
-          printf("JUMPIFEQ calculate%s GF@-_-2ndt string@string\n", countstr);
-          printf("JUMPIFEQ first%s GF@-_-2ndt string@nil\n", countstr);
+          printf("LABEL firstisstring%s\n", countstr.txt);
+          printf("JUMPIFEQ calculate%s GF@-_-2ndt string@string\n",
+                 countstr.txt);
+          printf("JUMPIFEQ first%s GF@-_-2ndt string@nil\n", countstr.txt);
           printf("JUMP -_-exit7\n");
 
-          printf("LABEL calculate%s\n", countstr);
+          printf("LABEL calculate%s\n", countstr.txt);
           printf("CONCAT GF@-_-1st GF@-_-1st GF@-_-2nd\n");
           printf("PUSHS GF@-_-1st\n");
-          printf("JUMP -_-finish%s\n", countstr);
+          printf("JUMP -_-finish%s\n", countstr.txt);
 
-          printf("LABEL second%s", countstr);
+          printf("LABEL second%s", countstr.txt);
           printf("PUSHS GF@-_-2nd\n");
-          printf("JUMP -_-finish%s\n", countstr);
+          printf("JUMP -_-finish%s\n", countstr.txt);
 
-          printf("LABEL first%s\n", countstr);
+          printf("LABEL first%s\n", countstr.txt);
           printf("PUSHS GF@-_-1st\n");
-          printf("JUMP -_-finish%s\n", countstr);
+          printf("JUMP -_-finish%s\n", countstr.txt);
 
-          printf("LABEL empty%s\n", countstr);
+          printf("LABEL empty%s\n", countstr.txt);
           printf("PUSHS string@\n");  // Might cause issues
-          printf("JUMP -_-finish%s\n", countstr);
+          printf("JUMP -_-finish%s\n", countstr.txt);
 
-          printf("LABEL -_-finish%s\n", countstr);
+          printf("LABEL -_-finish%s\n", countstr.txt);
           counter -= 1;
           break;
         case _lessthan:         // ifns
@@ -306,122 +312,133 @@ void evaluate_expression(expr* e, function_table* f, string* functionname,
           printf("POPS GF@-_-1st\n");
           printf("TYPE GF@-_-1stt GF@-_-1st\n");
           printf("TYPE GF@-_-2ndt GF@-_-2nd\n");
-          printf("JUMPIFEQ firstisint%s GF@-_-1stt string@int\n", countstr);
-          printf("JUMPIFEQ firstisfloat%s GF@-_-1stt string@float\n", countstr);
+          printf("JUMPIFEQ firstisint%s GF@-_-1stt string@int\n", countstr.txt);
+          printf("JUMPIFEQ firstisfloat%s GF@-_-1stt string@float\n",
+                 countstr.txt);
           printf("JUMPIFEQ firstisstring%s GF@-_-1stt string@string\n",
-                 countstr);
-          printf("JUMPIFEQ firstisnil%s GF@-_-1stt string@nil\n", countstr);
+                 countstr.txt);
+          printf("JUMPIFEQ firstisnil%s GF@-_-1stt string@nil\n", countstr.txt);
           printf("JUMP -_-exit7\n");  // May not be the correct exit code
 
-          printf("label firstisint%s\n", countstr);
-          printf("JUMPIFEQ calculate%s GF@-_-2ndt string@int\n", countstr);
+          printf("label firstisint%s\n", countstr.txt);
+          printf("JUMPIFEQ calculate%s GF@-_-2ndt string@int\n", countstr.txt);
           printf("JUMPIFEQ secondisintzero%s GF@-_-2ndt string@nil\n",
-                 countstr);
-          printf("JUMPIFEQ firsttofloat%s GF@-_-2ndt string@float\n", countstr);
+                 countstr.txt);
+          printf("JUMPIFEQ firsttofloat%s GF@-_-2ndt string@float\n",
+                 countstr.txt);
           printf("JUMP -_-exit7\n");  // May not be the correct exit code
 
-          printf("label firstisfloat%s\n", countstr);
-          printf("JUMPIFEQ calculate%s GF@-_-2ndt string@float\n", countstr);
+          printf("label firstisfloat%s\n", countstr.txt);
+          printf("JUMPIFEQ calculate%s GF@-_-2ndt string@float\n",
+                 countstr.txt);
           printf("JUMPIFEQ secondisfloatzero%s GF@-_-2ndt string@nil\n",
-                 countstr);
-          printf("JUMPIFEQ secondtofloat%s GF@-_-2ndt string@int\n", countstr);
+                 countstr.txt);
+          printf("JUMPIFEQ secondtofloat%s GF@-_-2ndt string@int\n",
+                 countstr.txt);
           printf("JUMP -_-exit7\n");  // May not be the correct exit code
 
-          printf("label firstisstring%s\n", countstr);
-          printf("JUMPIFEQ calculate%s GF@-_-2ndt string@string\n", countstr);
+          printf("label firstisstring%s\n", countstr.txt);
+          printf("JUMPIFEQ calculate%s GF@-_-2ndt string@string\n",
+                 countstr.txt);
           printf("JUMPIFEQ secondisstringzero%s GF@-_-2ndt string@nil\n",
-                 countstr);
+                 countstr.txt);
           printf("JUMP -_-exit7\n");  // May not be the correct exit code
 
-          printf("label firstisnil%s\n", countstr);
-          printf("JUMPIFEQ calculate%s GF@-_-2ndt string@nil\n", countstr);
-          printf("JUMPIFEQ firstozeroint%s GF@-_-2ndt string@int\n", countstr);
+          printf("label firstisnil%s\n", countstr.txt);
+          printf("JUMPIFEQ calculate%s GF@-_-2ndt string@nil\n", countstr.txt);
+          printf("JUMPIFEQ firstozeroint%s GF@-_-2ndt string@int\n",
+                 countstr.txt);
           printf("JUMPIFEQ firstozerofloat%s GF@-_-2ndt string@float\n",
-                 countstr);
+                 countstr.txt);
           printf("JUMPIFEQ firsttoemptystring%s GF@-_-2ndt string@string\n",
-                 countstr);
-          printf("label secondisintzero%s\n", countstr);
+                 countstr.txt);
+          printf("label secondisintzero%s\n", countstr.txt);
           printf("MOVE GF@-_-2nd int@0\n");
-          printf("JUMP calculate%s\n", countstr);
-          printf("label secondisfloatzero%s\n", countstr);
+          printf("JUMP calculate%s\n", countstr.txt);
+          printf("label secondisfloatzero%s\n", countstr.txt);
           printf("MOVE GF@-_-2nd float@%a\n", 0.0);
-          printf("JUMP calculate%s\n", countstr);
-          printf("label secondisstringzero%s\n", countstr);
+          printf("JUMP calculate%s\n", countstr.txt);
+          printf("label secondisstringzero%s\n", countstr.txt);
           printf("MOVE GF@-_-2nd string@\n");
-          printf("JUMP calculate%s\n", countstr);
-          printf("label firstozeroint%s\n", countstr);
+          printf("JUMP calculate%s\n", countstr.txt);
+          printf("label firstozeroint%s\n", countstr.txt);
           printf("MOVE GF@-_-1st int@0\n");
-          printf("JUMP calculate%s\n", countstr);
-          printf("label firstozerofloat%s\n", countstr);
+          printf("JUMP calculate%s\n", countstr.txt);
+          printf("label firstozerofloat%s\n", countstr.txt);
           printf("MOVE GF@-_-1st float@%a\n", 0.0);
-          printf("JUMP calculate%s\n", countstr);
-          printf("label firsttoemptystring%s\n", countstr);
+          printf("JUMP calculate%s\n", countstr.txt);
+          printf("label firsttoemptystring%s\n", countstr.txt);
           printf("MOVE GF@-_-1st string@\n");
-          printf("JUMP calculate%s\n", countstr);
-          printf("label firsttofloat%s\n", countstr);
+          printf("JUMP calculate%s\n", countstr.txt);
+          printf("label firsttofloat%s\n", countstr.txt);
           printf("INT2FLOAT GF@-_-1st GF@-_-1st\n");
-          printf("JUMP calculate%s\n", countstr);
-          printf("label secondtofloat%s\n", countstr);
+          printf("JUMP calculate%s\n", countstr.txt);
+          printf("label secondtofloat%s\n", countstr.txt);
           printf("INT2FLOAT GF@-_-2nd GF@-_-2nd\n");
-          printf("JUMP calculate%s\n", countstr);
-          printf("LABEL eq%s\n", countstr);
+          printf("JUMP calculate%s\n", countstr.txt);
+          printf("LABEL eq%s\n", countstr.txt);
           printf("EQ GF@-_-3rd GF@-_-1st GF@-_-2nd");
-          printf("JUMP finish%s\n", countstr);
-          printf("label calculate%s\n", countstr);
+          printf("JUMP finish%s\n", countstr.txt);
+          printf("label calculate%s\n", countstr.txt);
           if (*e->op == _lessthan)
             printf("LT GF@-_-3rd GF@-_-1st GF@-_-2nd\n");
           else if (*e->op == _greaterthan)
             printf("GT GF@-_-3rd GF@-_-1st GF@-_-2nd\n");
           else if (*e->op == _lessthanoreq) {
             printf("LT GF@-_-3rd GF@-_-1st GF@-_-2nd\n");
-            printf("JUMPIFEQ eq%s GF@-_-3rd bool@false\n", countstr);
+            printf("JUMPIFEQ eq%s GF@-_-3rd bool@false\n", countstr.txt);
           } else if (*e->op == _greaterthanoreq) {
             printf("GT GF@-_-3rd GF@-_-1st GF@-_-2nd\n");
-            printf("JUMPIFEQ eq%s GF@-_-3rd bool@false\n", countstr);
+            printf("JUMPIFEQ eq%s GF@-_-3rd bool@false\n", countstr.txt);
           }
-          printf("LABEL finish%s\n", countstr);
+          printf("LABEL finish%s\n", countstr.txt);
           printf("PUSHS GF@-_-3rd");
+          break;
         case _typecheck:      // ifns
         case _not_typecheck:  // ifns
           printf("POPS GF@-_-2nd\n");
           printf("POPS GF@-_-1st\n");
           printf("TYPE GF@-_-1stt GF@-_-1st\n");
           printf("TYPE GF@-_-2ndt GF@-_-2nd\n");
-          printf("JUMPIFEQ firstisint%s GF@-_-1stt string@int\n", countstr);
-          printf("JUMPIFEQ firstisfloat%s GF@-_-1stt string@float\n", countstr);
+          printf("JUMPIFEQ firstisint%s GF@-_-1stt string@int\n", countstr.txt);
+          printf("JUMPIFEQ firstisfloat%s GF@-_-1stt string@float\n",
+                 countstr.txt);
           printf("JUMPIFEQ firstisstring%s GF@-_-1stt string@string\n",
-                 countstr);
-          printf("JUMPIFEQ firstisnil%s GF@-_-1stt string@nil\n", countstr);
-          printf("JUMPIFEQ firstisbool%s GF@-_-1stt string@bool\n", countstr);
+                 countstr.txt);
+          printf("JUMPIFEQ firstisnil%s GF@-_-1stt string@nil\n", countstr.txt);
+          printf("JUMPIFEQ firstisbool%s GF@-_-1stt string@bool\n",
+                 countstr.txt);
           printf("JUMP -_-exit7\n");  // May not be the correct exit code
-          printf("label firstisint%s\n", countstr);
-          printf("JUMPIFEQ calculate%s GF@-_-2ndt string@int\n", countstr);
-          printf("JUMP false%s\n", countstr);
-          printf("label firstisfloat%s\n", countstr);
-          printf("JUMPIFEQ calculate%s GF@-_-2ndt string@float\n", countstr);
-          printf("JUMP false%s\n", countstr);
-          printf("label firstisstring%s\n", countstr);
-          printf("JUMPIFEQ calculate%s GF@-_-2ndt string@string\n", countstr);
-          printf("JUMP false%s\n", countstr);
-          printf("label firstisnil%s\n", countstr);
-          printf("JUMPIFEQ calculate%s GF@-_-2ndt string@nil\n", countstr);
-          printf("JUMP false%s\n", countstr);
-          printf("label firstisbool%s\n", countstr);
-          printf("JUMPIFEQ calculate%s GF@-_-2ndt string@bool\n", countstr);
-          printf("JUMP false%s\n", countstr);
-          printf("label calculate%s\n", countstr);
+          printf("label firstisint%s\n", countstr.txt);
+          printf("JUMPIFEQ calculate%s GF@-_-2ndt string@int\n", countstr.txt);
+          printf("JUMP false%s\n", countstr.txt);
+          printf("label firstisfloat%s\n", countstr.txt);
+          printf("JUMPIFEQ calculate%s GF@-_-2ndt string@float\n",
+                 countstr.txt);
+          printf("JUMP false%s\n", countstr.txt);
+          printf("label firstisstring%s\n", countstr.txt);
+          printf("JUMPIFEQ calculate%s GF@-_-2ndt string@string\n",
+                 countstr.txt);
+          printf("JUMP false%s\n", countstr.txt);
+          printf("label firstisnil%s\n", countstr.txt);
+          printf("JUMPIFEQ calculate%s GF@-_-2ndt string@nil\n", countstr.txt);
+          printf("JUMP false%s\n", countstr.txt);
+          printf("label firstisbool%s\n", countstr.txt);
+          printf("JUMPIFEQ calculate%s GF@-_-2ndt string@bool\n", countstr.txt);
+          printf("JUMP false%s\n", countstr.txt);
+          printf("label calculate%s\n", countstr.txt);
           printf("EQ GF@-_-1st GF@-_-1st GF@-_-2nd");
           printf("PUSHS GF@-_-1st\n");
-          printf("JUMP finish%s\n", countstr);
-          printf("label false%s\n", countstr);
+          printf("JUMP finish%s\n", countstr.txt);
+          printf("label false%s\n", countstr.txt);
           printf("PUSHS bool@false\n");
-          printf("JUMP finish%s\n", countstr);
-          printf("label finish%s\n", countstr);
+          printf("JUMP finish%s\n", countstr.txt);
+          printf("label finish%s\n", countstr.txt);
           if (e->type == _not_typecheck) printf("NOTS\n");
           break;
       }
     } else if (e->func) {
-      // generate_call(e->func, f, functionname, v); TODO
+      generate_call(e->func, f, functionname, v, NULL);
     }
 
     e = e->next;
@@ -436,6 +453,15 @@ void evaluate_expression(expr* e, function_table* f, string* functionname,
 
 void generate_call(call* c, function_table* f, string* functionname, varlist* v,
                    string* savevalue) {
+  if (f == NULL) {
+    printf("ERROR: Function  not defined");
+  }
+  if (functionname == NULL) {
+    printf("ERROR: Function not defined");
+  }
+  if (v == NULL) {
+    printf("ERROR: Function  not defined");
+  }
   printf("CREATEFRAME\n");
   input* i = c->in;
   while (i != NULL) {
