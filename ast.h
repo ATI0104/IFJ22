@@ -76,25 +76,77 @@ typedef struct my_favorites {
   tlist* t;           // token list
   AST* a;             // abstract syntax tree
 } my_favorites;
+/**
+ * @brief Initialize AST
+ */
 void AST_init(AST** a);
+/**
+ * @brief Add item to the AST
+ */
 void AST_add(AST** a, string* f_name, code* code);
+/**
+ * @brief Removes the entire AST
+ */
 void AST_destroy(AST** a);
+/**
+ * @brief Initialize (struct for) code
+ */
 void code_init(code** c);
-void code_add(code** c, int lnum, code* i, code* e, code* loop, expr* exp,
-              call* jmp, string* var, bool ret);
+/**
+ * @brief Add item to the (struct for) code
+ */
+void code_add(code** c, int lnum, code* i, code* e, code* loop, expr* exp, call* jmp, string* var, bool ret);
+/**
+ * @brief Removes the entire (struct for) code
+ */
 void code_destroy(code** c);
+/**
+ * @brief Initialize (struct for) expression
+ */
 void expr_init(expr** e);
-void expr_add(expr** e, int type, string* str, int* num, double* fl, int* op,
-              string* var, call* func, int* keywords);
+/**
+ * @brief Add item to the (struct for) expression
+ */
+void expr_add(expr** e, int type, string* str, int* num, double* fl, int* op, string* var, call* func, int* keywords);
+/**
+ * @brief Removes the entire (struct for) expression
+ */
 void expr_destroy(expr** e, bool rec);
+/**
+ * @brief Removes the first element of the (struct) expression
+ */
 expr* expr_pop(expr** e);
+/**
+ * @brief Converts expression to prefix
+ */
 void expr_toprefix(expr** e);
+/**
+ * @brief Reverses the expression
+ */
 void expr_reverse(expr** e);
+/**
+ * @brief Initialize (struct for) call
+ */
 void call_init(call** c);
+/**
+ * @brief Adds item to the (struct for) call
+ */
 void call_create(call** c, string* f_name, input* in, output* out);
+/**
+ * @brief Removes the entire (struct for) call
+ */
 void call_destroy(call** c);
+/**
+ * @brief Initialize (struct for) init
+ */
 void input_init(input** in);
+/**
+ * @brief Adds item to the (struct for) input
+ */
 void input_add(input** in, int* i, double* f, string* s, string* var);
+/**
+ * @brief Removes the entire (struct for) input
+ */
 void input_destroy(input** in);
 
 #endif
