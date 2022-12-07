@@ -1,3 +1,8 @@
+/**
+  * Implementace překladače imperativního jazyka IFJ22
+  * @author Attila Kovács (xkovac60)
+  * @file macros.h
+*/
 #ifndef _mymacros
 #define _mymacros
 #define SyntaxError 2
