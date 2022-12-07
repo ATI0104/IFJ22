@@ -1,3 +1,8 @@
+/**
+  * Implementace překladače imperativního jazyka IFJ22
+  * @author Attila Kovács (xkovac60)
+  * @file stack.h
+*/
 #ifndef _stack
 #define _stack
 #include <stdio.h>
