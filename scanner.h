@@ -1,3 +1,8 @@
+/**
+  * Implementace překladače imperativního jazyka IFJ22
+  * @author Attila Kovács (xkovac60)
+  * @file scanner.h
+*/
 #ifndef _token
 #define _token
 #include <regex.h>
