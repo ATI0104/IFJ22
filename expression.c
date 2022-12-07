@@ -1,16 +1,8 @@
 #include "expression.h"
 
-tlist *exprlist;
+expr *expression;
 bool endingFunctionBracket = false;
 
-void printStack(TStack *stack) {
-  StackItem *tmp = stack->first;
-  while (tmp != NULL) {
-    printf("%d\n", tmp->item);
-    tmp = tmp->next;
-  }
-  printf("\n\n");
-}
 const precendencyOperation table[16][16] = {
 
     //|+-|*/|.| r | (| )| i| $ | Input        r - relational operators (<, <=,
@@ -19,8 +11,8 @@ const precendencyOperation table[16][16] = {
     //                             Stack
     {R, S, R, R, S, R, S, R},  // +-
     {R, R, R, R, S, R, S, R},  // */
-    {S, S, S, R, S, R, S, R},  // . TODO
-    {S, S, S, N, S, R, S, R},  // r
+    {S, S, S, R, S, R, S, R},  // . 
+    {S, S, S, R, S, R, S, R},  // r
     {S, S, S, S, S, Q, S, N},  // (
     {R, R, R, R, N, R, N, R},  // )
     {R, R, R, R, N, R, N, R},  // i
@@ -38,64 +30,45 @@ precendencyOperation getOperationFromTable(precedencyInput onStack,
   }
 }
 
-precedencyInput convertTokenTypeToExpressionType(token *tok) {
-  int type = tok->type;
-  switch (type) {
-    case _minus:
-    case _plus:
-      return EXPR_PLUS_MINUS;
-
-    case _multiply:
-    case _divide:
-      return EXPR_MULDIV;
-
-    case _dot:
-      return EXPR_CONCAT;
-
-    case _left_parenthesis:
-      return EXPR_L_BRACKET;
-
-    case _right_parenthesis:
-      return EXPR_R_BRACKET;
-
-    case _lessthan:
-    case _lessthanoreq:
-    case _greaterthan:
-    case _greaterthanoreq:
-    case _equals:
-    case _typecheck:
-    case _not_typecheck:
-      return EXPR_REL;
-
-    case _identificator:
-    case _int:
-    case _float:
-    case _string:
-      return EXPR_ID;
-
-    default:
-      return EXPR_ERROR;
+precedencyInput convertTokenTypeToExpressionType(expr *exp) {
+if(exp->op){
+  if(*exp->op == _plus || *exp->op == _minus){
+    return EXPR_PLUS_MINUS;
+  }else if(*exp->op == _multiply || *exp->op == _divide){
+    return EXPR_MULDIV;
+  }else if (*exp->op == _dot){
+    return EXPR_CONCAT;
+  }else if(*exp->op == _lessthan || *exp->op == _lessthanoreq || 
+        *exp->op == _greaterthan ||* exp->op == _greaterthanoreq || 
+        *exp->op == _typecheck ||* exp->op == _not_typecheck){
+          return EXPR_REL;
+  }else if(*exp->op == _left_parenthesis){
+    return EXPR_L_BRACKET;
+  }else if(*exp->op == _right_parenthesis){
+    return EXPR_R_BRACKET;
   }
 }
-/*
-bool endOfExpression(token *tok) {
-  if  {
-    return true;
+  else if(exp->fl || exp->num || exp->str!=NULL || exp->var!=NULL || exp->typekeywords != NULL || exp->func != NULL ){
+    return EXPR_ID;
+  } 
+  else{
+    return EXPR_ERROR;
   }
-  return false;
+return EXPR_ERROR;
 }
-*/
-void insertAfter(token *tok) {
-  tlist *elem = malloc(sizeof(tlist));
+
+void insertAfter(expr *exp) {
+  expr *elem;
+   maloc(elem, sizeof(expr));
   if (elem == NULL) {
-    exit(99);  //?
+    exit(99);  
   }
-  elem->t = *tok;
+  elem->first = exp->first;
   elem->next = NULL;
-  if (exprlist == NULL) {
-    exprlist = elem;
+  if (expression == NULL) {
+    expression = elem;
   } else {
-    tlist *tmp = exprlist;
+    expr *tmp = expression;
     while (tmp->next != NULL) {
       tmp = tmp->next;
     }
@@ -108,15 +81,15 @@ bool reduceDyadicOperation(TStack *stack,
   if (possibleRule[0]->item == EXPR_R_BRACKET &&
       possibleRule[1]->item == EXPR_NON_TERMINAL &&
       possibleRule[2]->item == EXPR_L_BRACKET) {
-    free(possibleRule[0]->tok);
-    free(possibleRule[2]->tok);
+    free(possibleRule[0]->exp);
+    free(possibleRule[2]->exp);
     deleteNearestItem(stack, EXPR_R_BRACKET);
     deleteNearestItem(stack, EXPR_L_BRACKET);
     return true;
   } else if (possibleRule[0]->item == EXPR_NON_TERMINAL &&
              possibleRule[1]->item == EXPR_PLUS_MINUS &&
              possibleRule[2]->item == EXPR_NON_TERMINAL) {
-    insertAfter(possibleRule[1]->tok);
+    insertAfter(possibleRule[1]->exp);
     deleteNearestItem(stack, EXPR_NON_TERMINAL);
     deleteNearestItem(stack, EXPR_PLUS_MINUS);
     deleteNearestItem(stack, EXPR_HANDLE);
@@ -124,7 +97,7 @@ bool reduceDyadicOperation(TStack *stack,
   } else if (possibleRule[0]->item == EXPR_NON_TERMINAL &&
              possibleRule[1]->item == EXPR_MULDIV &&
              possibleRule[2]->item == EXPR_NON_TERMINAL) {
-    insertAfter(possibleRule[1]->tok);
+    insertAfter(possibleRule[1]->exp);
     deleteNearestItem(stack, EXPR_NON_TERMINAL);
     deleteNearestItem(stack, EXPR_MULDIV);
     deleteNearestItem(stack, EXPR_HANDLE);
@@ -132,7 +105,7 @@ bool reduceDyadicOperation(TStack *stack,
   } else if (possibleRule[0]->item == EXPR_NON_TERMINAL &&
              possibleRule[1]->item == EXPR_REL &&
              possibleRule[2]->item == EXPR_NON_TERMINAL) {
-    insertAfter(possibleRule[1]->tok);
+    insertAfter(possibleRule[1]->exp);
     deleteNearestItem(stack, EXPR_NON_TERMINAL);
     deleteNearestItem(stack, EXPR_REL);
     deleteNearestItem(stack, EXPR_HANDLE);
@@ -140,7 +113,7 @@ bool reduceDyadicOperation(TStack *stack,
   } else if (possibleRule[0]->item == EXPR_NON_TERMINAL &&
              possibleRule[1]->item == EXPR_CONCAT &&
              possibleRule[2]->item == EXPR_NON_TERMINAL) {
-    insertAfter(possibleRule[1]->tok);
+    insertAfter(possibleRule[1]->exp);
     deleteNearestItem(stack, EXPR_NON_TERMINAL);
     deleteNearestItem(stack, EXPR_CONCAT);
     deleteNearestItem(stack, EXPR_HANDLE);
@@ -154,7 +127,7 @@ bool reduceIdentifier(TStack *stack, StackItem **possibleRule) {
   if (possibleRule[0]->item == EXPR_ID ||
       possibleRule[0]->item == EXPR_NON_TERMINAL) {
     if (possibleRule[0]->item == EXPR_ID) {
-      insertAfter(possibleRule[0]->tok);
+      insertAfter(possibleRule[0]->exp);
     }
     StackItem *tmp = stack->first;
     while (tmp->next->item != EXPR_HANDLE) {
@@ -201,21 +174,20 @@ bool reduce(TStack *stack) {
   return true;
 }
 
-precedencyAnalysisReturn parseExpression(tlist *tok) {
+bool parseExpression(expr *exp) {
   endingFunctionBracket = false;
   bool error = false;
-  //token *tok = tokens->t;
-  precedencyAnalysisReturn precedencyOutput;
-  exprlist = NULL;
+  bool precedencyOk;
+  expression = NULL;
   TStack stack;
   stackInit(&stack);
-  while (tok->t.type != _EOF || tok->t.type != _semicolon) {
-    precedencyInput input = convertTokenTypeToExpressionType(&tok->t);
+  while (exp != NULL) { 
+    precedencyInput input = convertTokenTypeToExpressionType(exp);
     precedencyInput opOnStack = stackTopTerminal(&stack);
     precendencyOperation op = getOperationFromTable(opOnStack, input);
     if (op == S) {
       stackInsertHandle(&stack);
-      stackPush(&stack, input, &tok->t);
+      stackPush(&stack, input, exp);
     } else if (op == R) {
       while (op == R) {
         if (!reduce(&stack)) {
@@ -227,7 +199,7 @@ precedencyAnalysisReturn parseExpression(tlist *tok) {
       }
       if (input != EXPR_R_BRACKET) {
         stackInsertHandle(&stack);
-        stackPush(&stack, input, &tok->t);
+        stackPush(&stack, input, exp);
       } else if (input == EXPR_R_BRACKET) {
         while (1) {
           if (stack.first->next->item == EXPR_L_BRACKET &&
@@ -240,11 +212,11 @@ precedencyAnalysisReturn parseExpression(tlist *tok) {
             break;
           }
         }
-        stackPush(&stack, input, &tok->t);
+        stackPush(&stack, input, exp);
       }
     } else if (op == Q) {
       reduce(&stack);
-      stackPush(&stack, input, &tok->t);
+      stackPush(&stack, input, exp);
     } else if (op == N) {
       if ((input == EXPR_ID && opOnStack == EXPR_ID) ||
           (input == EXPR_ID && opOnStack == EXPR_R_BRACKET)) {
@@ -255,7 +227,7 @@ precedencyAnalysisReturn parseExpression(tlist *tok) {
     if (endingFunctionBracket) {
       break;
     }
-    tok = tok->next;
+    exp = exp->next;
   }
   while (!error) {
     if (stack.first->item == EXPR_NON_TERMINAL &&
@@ -267,13 +239,11 @@ precedencyAnalysisReturn parseExpression(tlist *tok) {
     }
   }
   stackDispose(&stack);
-  precedencyOutput.lastToken = &tok->t;
-  precedencyOutput.ok = !error;
+  precedencyOk = !error;
   if (endingFunctionBracket) {
-    precedencyOutput.ok = true;
+    precedencyOk = true;
   }
-  precedencyOutput.tok_list = exprlist;
-  return precedencyOutput;
+  return precedencyOk;
 }
 //********EXPRESSION STACK OPERATIONS ******
 void stackInit(TStack *stack) {
@@ -282,14 +252,15 @@ void stackInit(TStack *stack) {
   stackPush(stack, EXPR_DOLLAR, NULL);
 }
 
-void stackPush(TStack *stack, precedencyInput input, token *tok) {
-  StackItem *elem = malloc(sizeof(StackItem));
+void stackPush(TStack *stack, precedencyInput input, expr* exp) {
+  StackItem *elem ; 
+  maloc(elem, sizeof(StackItem));
   if (elem == NULL) {
     exit(99);
   }
   elem->item = input;
   elem->next = NULL;
-  elem->tok = tok;
+  elem->exp = exp;
   if (stack->totalAmount == 0) {
     stack->first = elem;
   } else {
@@ -310,7 +281,6 @@ void stackPop(TStack *stack) {
       stack->first = stack->first->next;
       stack->totalAmount--;
     }
-    // freeToken(tmp->tok);
     free(tmp);
   }
 }
@@ -320,7 +290,8 @@ void stackInsertHandle(TStack *stack) {
   if (tmp->item != EXPR_NON_TERMINAL) {
     stackPush(stack, EXPR_HANDLE, NULL);
   } else {
-    StackItem *elem = malloc(sizeof(StackItem));
+    StackItem *elem;
+    maloc(elem, sizeof(StackItem));
     if (elem == NULL) {
       exit(99);
     }
