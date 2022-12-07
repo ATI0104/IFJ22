@@ -42,6 +42,7 @@ int main(int argc, char* argv[]) {
     if (Check_AST(abstractsyntaxtree, f)) {
       // Generating IFJcode22
      generate(abstractsyntaxtree, f);
+     AST_destroy(&abstractsyntaxtree);
     } else {
       semantic_error(-1, "");
     }
