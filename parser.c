@@ -148,6 +148,26 @@ expr* read_expression(int brackets, bool exprinif, string* fname) {
       expr_add(&tmp, 0, NULL, NULL, NULL, &(fav.t->t.type), NULL, NULL, NULL);
       brackets--;
       fav.t = fav.t->next;
+      if (brackets == 0 && exprinif) {
+        if (fav.t->t.type == _semicolon ||
+            fav.t->t.type == _left_curly_bracket) {
+          if (!operatorexpected) return NULL;
+          if (brackets == 0) {
+            if (exprinif) {
+              if (fav.t->t.type == _left_curly_bracket) {
+                return tmp;
+              }
+            } else {
+              if (fav.t->t.type == _semicolon) {
+                return tmp;
+              }
+            }
+            return NULL;
+          }
+          return NULL;
+        } else
+          return NULL;
+      }
       continue;
     }
     if (fav.t->t.type == _semicolon || fav.t->t.type == _left_curly_bracket) {
