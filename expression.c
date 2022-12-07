@@ -13,7 +13,7 @@ const precendencyOperation table[16][16] = {
     {R, R, R, R, S, R, S, R},  // */
     {S, S, S, R, S, R, S, R},  // . 
     {S, S, S, R, S, R, S, R},  // r
-    {S, S, S, S, S, Q, S, N},  // (
+    {S, S, S, S, S, E, S, N},  // (
     {R, R, R, R, N, R, N, R},  // )
     {R, R, R, R, N, R, N, R},  // i
     {S, S, S, S, S, N, S, N},  // $
@@ -30,7 +30,7 @@ precendencyOperation getOperationFromTable(precedencyInput onStack,
   }
 }
 
-precedencyInput convertTokenTypeToExpressionType(expr *exp) {
+precedencyInput GetExpressionType(expr *exp) {
 if(exp->op){
   if(*exp->op == _plus || *exp->op == _minus){
     return EXPR_PLUS_MINUS;
@@ -182,7 +182,7 @@ bool parseExpression(expr *exp) {
   TStack stack;
   stackInit(&stack);
   while (exp != NULL) { 
-    precedencyInput input = convertTokenTypeToExpressionType(exp);
+    precedencyInput input = GetExpressionType(exp);
     precedencyInput opOnStack = stackTopTerminal(&stack);
     precendencyOperation op = getOperationFromTable(opOnStack, input);
     if (op == S) {
@@ -214,7 +214,7 @@ bool parseExpression(expr *exp) {
         }
         stackPush(&stack, input, exp);
       }
-    } else if (op == Q) {
+    } else if (op == E) {
       reduce(&stack);
       stackPush(&stack, input, exp);
     } else if (op == N) {
@@ -245,7 +245,7 @@ bool parseExpression(expr *exp) {
   }
   return precedencyOk;
 }
-//********EXPRESSION STACK OPERATIONS ******
+/******** EXPRESSION STACK OPERATIONS ******/
 void stackInit(TStack *stack) {
   stack->first = NULL;
   stack->totalAmount = 0;
@@ -274,7 +274,7 @@ void stackPop(TStack *stack) {
   StackItem *tmp;
   if (stack->first != NULL) {
     tmp = stack->first;
-    if (stack->totalAmount == 1) {  // Only one item is in stack
+    if (stack->totalAmount == 1) { 
       stack->first = NULL;
       stack->totalAmount = 0;
     } else {
@@ -323,7 +323,6 @@ void deleteNearestItem(TStack *stack, precedencyInput item) {
       stackPop(stack);
     } else {
       prev->next = tmp->next;
-      // freeToken(tmp->tok);
       free(tmp);
     }
   }
@@ -351,7 +350,6 @@ void stackDispose(TStack *stack) {
     while (tmp != NULL) {
       tmp2 = tmp;
       tmp = tmp->next;
-      // freeToken(tmp2->tok);
       free(tmp2);
       stack->totalAmount--;
     }
