@@ -542,8 +542,6 @@ tlist* tlist_add(tlist* t, token tok) {
   tmp2->next->t = tok;
   return tmp;
 }
-//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! UNTIL THIS POINT EVERYTHING SHOULD BE
-//! WORKING!!!!!!!!!!!!!!!!!!!!!!!
 
 // Returns the called function, the first item in tlist should be the
 // function's name
