@@ -641,7 +641,7 @@ void get_identificator(string *word, char *re) {
   }
 }
 /**
- * @brief Converts special characters to their IFJ22 representation
+ * @brief Converts special characters to their IFJcode22 representation
  *
  * @param str
  */

@@ -1,10 +1,19 @@
 /**
-  * Implementace překladače imperativního jazyka IFJ22
-  * @author Attila Kovács (xkovac60)
-  * @file semantics.c
-*/
+ * Implementace překladače imperativního jazyka IFJ22
+ * @author Attila Kovács (xkovac60)
+ * @file semantics.c
+ */
 #include "semantics.h"
-
+/**
+ * @brief This function is called to check the semantics of the program
+ *        It loops through the AST and calls the Check_code function with it's
+ * code representation
+ *
+ * @param a
+ * @param f
+ * @return true
+ * @return false
+ */
 bool Check_AST(AST* a, function_table* f) {
   while (a != NULL) {
     {
@@ -20,6 +29,12 @@ bool Check_AST(AST* a, function_table* f) {
   }
   return true;
 }
+/**
+ * @brief Loads the input parameters into the varlist
+ *
+ * @param v
+ * @param thisfunction
+ */
 void loadpredefvars(varlist** v, function_table* thisfunction) {
   if (v == NULL) return;
   if (thisfunction == NULL) return;
@@ -30,10 +45,22 @@ void loadpredefvars(varlist** v, function_table* thisfunction) {
     in = in->next;
   }
 }
+
+/**
+ * @brief Checks the code part of the AST by calling the required functions
+ *
+ * @param c code
+ * @param f function_table
+ * @param localVars local variables
+ * @param funname name of the function
+ * @param v
+ * @return true
+ * @return false
+ */
 bool Check_code(code* c, function_table* f, var_table* localVars,
                 string funname, varlist* v) {
   while (c != NULL) {
-    if (c->i) {
+    if (c->i) {  // if check
       Check_expression(c->expression, f, v);
       if (Check_code(c->i, f, localVars, funname, v)) {
         if (Check_code(c->e, f, localVars, funname, v)) {
@@ -43,25 +70,25 @@ bool Check_code(code* c, function_table* f, var_table* localVars,
           return false;
       }
       return false;
-    } else if (c->loop) {
+    } else if (c->loop) {  // while check
       Check_expression(c->expression, f, v);
       if (Check_code(c->loop, f, localVars, funname, v)) {
         c = c->next;
         continue;
       }
       return false;
-    } else if (c->ret) {
+    } else if (c->ret) {  // return check
       Check_expression(c->expression, f, v);
       if (check_return_type(c->expression, f, funname, v)) {
         c = c->next;
         continue;
       }
-    } else if (c->jmp) {
+    } else if (c->jmp) {  // function call check
       if (call_check(c->jmp, f, v)) {
         c = c->next;
         continue;
       }
-    } else if (c->var) {
+    } else if (c->var) {  // variable assignment check
       Check_expression(c->expression, f, v);
       if (var_table_get(&localVars, *(c->var)) == NULL) {
         undefined_variable(-1);
@@ -70,7 +97,7 @@ bool Check_code(code* c, function_table* f, var_table* localVars,
       varlist_set(&v, c->var, type);
       c = c->next;
       continue;
-    } else if (c->expression) {
+    } else if (c->expression) {  // expression check
       Check_expression(c->expression, f, v);
       c = c->next;
       continue;
@@ -79,7 +106,16 @@ bool Check_code(code* c, function_table* f, var_table* localVars,
   }
   return true;
 }
-
+/**
+ * @brief Checks the retun type of the function
+ *
+ * @param ret expression after return keyword
+ * @param f function table
+ * @param funname name of the function
+ * @param v local variables
+ * @return true
+ * @return false
+ */
 bool check_return_type(expr* ret, function_table* f, string funname,
                        varlist* v) {
   function_table* thisfunction = function_table_get(&f, funname);
@@ -105,7 +141,18 @@ bool check_return_type(expr* ret, function_table* f, string funname,
   }
   incorrect_type_of_argument(-1);
 }
-
+/**
+ * @brief There are 4 special functions in IFJ22 that have variable input
+ * parameters: write accepts all of the input types and any number of them
+ * floatval can accept int or float or void
+ * intval can accept int or float or void
+ * strval can accept string or void
+ *
+ * @param c
+ * @param v
+ * @return true
+ * @return false
+ */
 bool Special_Function_Check(call* c, varlist* v) {
   string* s = c->function_name;
   if (strcmp(s->txt, "write") == 0) {
@@ -145,6 +192,16 @@ bool Special_Function_Check(call* c, varlist* v) {
   }
   incorrect_number_of_arguments(-1);
 }
+
+/**
+ * @brief Checks if the function call is correct
+ * 
+ * @param c 
+ * @param f 
+ * @param v 
+ * @return true 
+ * @return false 
+ */
 bool call_check(call* c, function_table* f, varlist* v) {
   if (c == NULL) return false;
   function_table* calledfunc = function_table_get(&f, *(c->function_name));
@@ -223,7 +280,13 @@ bool call_check(call* c, function_table* f, varlist* v) {
   }
   return true;
 }
-
+/**
+ * @brief Checks if the expression is Semantically correct
+ * 
+ * @param e 
+ * @param f 
+ * @param v 
+ */
 void Check_expression(expr* e, function_table* f, varlist* v) {
   get_expression_type(e, v, f);
   while (e != NULL) {
@@ -238,8 +301,8 @@ void Check_expression(expr* e, function_table* f, varlist* v) {
   }
 }
 /**
- * @brief Get the resulting type of an expression (should be called after
- * converting the expression to prefix)
+ * @brief Get the expected result type of an expression 
+ * (should be called after converting the expression to prefix)
  * Inspiration taken from:
  * https://www.geeksforgeeks.org/stack-set-4-evaluation-postfix-expression/
  * @param e expression
