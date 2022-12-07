@@ -1,3 +1,8 @@
+/**
+  * Implementace překladače imperativního jazyka IFJ22
+  * @author Attila Kovács (xkovac60)
+  * @file ast.c
+*/
 #include "ast.h"
 void AST_init(AST** a) {
   if (a == NULL) return;
