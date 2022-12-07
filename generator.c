@@ -571,53 +571,53 @@ void call_built_in_func(call* c, string* savevalue) {
 void TypeConversion() {  //!!!TODO change LABELS
   printf("Label -_-1stShouldBeInt\n");
   printf("TYPE GF@-_-1stt GF@-_-1st\n");
-  printf("JUMPIFEQ -_-1stIsInt  GF@-_-1stt string@int\n");
-  printf("JUMPIFEQ -_-2ndShouldBeFloat GF@-_-1stt string@float\n");
-  printf("JUMPIFEQ -_-1stIsNil GF@-_-1stt string@nil\n");
+  printf("JUMPIFEQ -_-1stIsInt_1  GF@-_-1stt string@int\n");
+  printf("JUMPIFEQ -_-2ndShouldBeFloat_1 GF@-_-1stt string@float\n");
+  printf("JUMPIFEQ -_-1stIsNil_1 GF@-_-1stt string@nil\n");
   printf("JUMP -_-exit4\n");
 
-  printf("Label -_-1stIsInt\n");
+  printf("Label -_-1stIsInt_1\n");
   printf("RETURN\n");
 
-  printf("Label -_-1stIsFloat\n");
+  printf("Label -_-1stIsFloat_1\n");
   printf("FLOAT2INT GF@-_-1st GF@-_-1st\n");
   printf("RETURN\n");
 
-  printf("Label -_-1stIsNil\n");
+  printf("Label -_-1stIsNil_1\n");
   printf("MOVE GF@-_-1st int@0\n");
   printf("RETURN\n");
 
   printf("LABEL -_-1stShouldBeFloat\n");
   printf("TYPE GF@-_-1stt GF@-_-1st\n");
-  printf("JUMPIFEQ -_-1stIsFloat GF@-_-1stt string@float\n");
-  printf("JUMPIFEQ -_-1stIsInt GF@-_-1stt string@int\n");
-  printf("JUMPIFEQ -_-1stIsNil GF@-_-1stt string@nil\n");
+  printf("JUMPIFEQ -_-1stIsFloat_2 GF@-_-1stt string@float\n");
+  printf("JUMPIFEQ -_-1stIsInt_2 GF@-_-1stt string@int\n");
+  printf("JUMPIFEQ -_-1stIsNil_2 GF@-_-1stt string@nil\n");
   printf("JUMP -_-exit4\n");
-  printf("Label -_-1stIsFloat\n");
+  printf("Label -_-1stIsFloat_2\n");
   printf("RETURN\n");
 
-  printf("Label -_-1stIsInt\n");
+  printf("Label -_-1stIsInt_2\n");
   printf("INT2FLOAT GF@-_-1st GF@-_-1st\n");
   printf("RETURN\n");
 
-  printf("Label -_-1stIsNil\n");
+  printf("Label -_-1stIsNil_2\n");
   printf("MOVE GF@-_-1st float@%a\n", 0.0);
   printf("RETURN\n");
 
   printf("LABEL -_-1stShouldBeString\n");
   printf("TYPE GF@-_-1stt GF@-_-1st\n");
-  printf("JUMPIFEQ -_-1stIsString GF@-_-1stt string@string\n");
-  printf("JUMPIFEQ -_-1stIsNil GF@-_-1stt string@nil\n");
+  printf("JUMPIFEQ -_-1stIsString_1 GF@-_-1stt string@string\n");
+  printf("JUMPIFEQ -_-1stIsNil_3 GF@-_-1stt string@nil\n");
   printf("JUMP -_-exit4\n");
 
-  printf("Label -_-1stIsString\n");
+  printf("Label -_-1stIsString_1\n");
   printf("RETURN\n");
 
-  printf("Label -_-1stIsNil\n");
+  printf("Label -_-1stIsNil_3\n");
   printf("MOVE GF@-_-1st string@\n");
   printf("RETURN\n");
 
-  printf("LABEL -_-2ndShouldBeFloat\n");
+  printf("LABEL -_-2ndShouldBeFloat_1\n");
   printf("TYPE GF@-_-2ndt GF@-_-2nd\n");
   printf("JUMPIFEQ -_-2ndIsFloat GF@-_-2ndt string@float\n");
   printf("JUMPIFEQ -_-2ndIsInt GF@-_-2ndt string@int\n");
@@ -634,16 +634,16 @@ void TypeConversion() {  //!!!TODO change LABELS
 
   printf("LABEL -_-2ndShouldBeFirst\n");
   printf("TYPE GF@-_-1stt GF@-_-1st\n");
-  printf("JUMPIFEQ -_-1stIsNil GF@-_-1stt string@nil\n");
-  printf("JUMPIFEQ -_-1stIsInt GF@-_-1stt string@int\n");
-  printf("JUMPIFEQ -_-1stIsFloat GF@-_-1stt string@float\n");
-  printf("JUMPIFEQ -_-1stIsString GF@-_-1stt string@string\n");
+  printf("JUMPIFEQ -_-1stIsNil_4 GF@-_-1stt string@nil\n");
+  printf("JUMPIFEQ -_-1stIsInt_3 GF@-_-1stt string@int\n");
+  printf("JUMPIFEQ -_-1stIsFloat_3 GF@-_-1stt string@float\n");
+  printf("JUMPIFEQ -_-1stIsString_2 GF@-_-1stt string@string\n");
   printf("JUMP -_-exit4\n");
 
-  printf("Label -_-1stIsNil\n");
+  printf("Label -_-1stIsNil_4\n");
   printf("TYPE GF@3rd GF@3rd\n");
   printf("JUMPIFEQ -_-1stand2ndshouldbeInt GF@3rd string@int\n");
-  printf("JUMPIFEQ -_-1stand2ndshouldbeFloat GF@3rd string@float\n");
+  printf("JUMPIFEQ -_-1stand2ndshouldbeFloat_2 GF@3rd string@float\n");
   printf("JUMPIFEQ -_-1stand2ndshouldbeString GF@3rd string@string\n");
   printf("JUMP -_-exit4\n");
 
@@ -652,7 +652,7 @@ void TypeConversion() {  //!!!TODO change LABELS
   printf("MOVE GF@-_-2nd int@0\n");
   printf("RETURN\n");
 
-  printf("Label -_-1stand2ndshouldbeFloat\n");
+  printf("Label -_-1stand2ndshouldbeFloat_2\n");
   printf("MOVE GF@-_-1st float@%a\n", 0.0);
   printf("MOVE GF@-_-2nd float@%a\n", 0.0);
   printf("RETURN\n");
@@ -662,15 +662,15 @@ void TypeConversion() {  //!!!TODO change LABELS
   printf("MOVE GF@-_-2nd string@\n");
   printf("RETURN\n");
 
-  printf("Label -_-1stIsInt\n");
+  printf("Label -_-1stIsInt_3\n");
   printf("MOVE GF@-_-2nd int@0\n");
   printf("RETURN\n");
 
-  printf("Label -_-1stIsFloat\n");
+  printf("Label -_-1stIsFloat_3\n");
   printf("MOVE GF@-_-2nd float@%a\n", 0.0);
   printf("RETURN\n");
 
-  printf("Label -_-1stIsString\n");
+  printf("Label -_-1stIsString_2\n");
   printf("MOVE GF@-_-2nd string@\n");
   printf("RETURN\n");
 
