@@ -1,4 +1,8 @@
-
+/**
+  * Implementace překladače imperativního jazyka IFJ22
+  * @author Anna Udvaros (xudvar02)
+  * @file symtable.h
+*/
 #ifndef _symtable
 #define _symtable
 #include <stdbool.h>
