@@ -24,6 +24,7 @@ void generate_return(expr* e, function_table* f, string* functionname,
                      varlist* v);
 void evaluate_expression(expr* e, function_table* f, string* functionname,
                          varlist* v, string* tovar);
-void generate_call(call* c, function_table* f, string* functionname, varlist* v,
-                   string* savevalue);
+void generate_call(call* c, function_table* f, string* savevalue);
+void call_built_in_func(call* c, string* savevalue);
+void TypeConversion();
 #endif
