@@ -1,3 +1,8 @@
+/**
+  * Implementace překladače imperativního jazyka IFJ22
+  * @author Attila Kovács (xkovac60)
+  * @file semantics.c
+*/
 #include "semantics.h"
 
 bool Check_AST(AST* a, function_table* f) {
